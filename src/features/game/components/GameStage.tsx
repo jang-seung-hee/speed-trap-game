@@ -39,6 +39,8 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     const cursorRef = useRef<HTMLDivElement>(null);
     const gameLoopRef = useRef<number | null>(null);
     const lastSpawnTime = useRef<number>(0);
+    const lastFrameTime = useRef<number>(0); // 델타 타임 계산용
+    const lastClickTime = useRef<number>(0); // 클릭 디바운싱용
     // 초기값을 100으로 설정하여 첫 차가 즉시 생성될 수 있도록 함
     const lastLaneSpawnY = useRef<Record<number, number>>((() => {
         const initial: Record<number, number> = {};
@@ -184,6 +186,13 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     }, [phase]);
 
     const capture = (lane: number) => {
+        // 클릭 디바운싱: 50ms 이내 중복 클릭 방지
+        const now = performance.now();
+        if (now - lastClickTime.current < 50) {
+            return;
+        }
+        lastClickTime.current = now;
+
         // Shutter flash effect 제거 (성능 최적화)
         soundManager.playShutter();
 
@@ -240,7 +249,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     soundManager.playPowerUp();
                 }
 
-                // Combo Calculation
+                // Combo Calculation - 배칭 최적화
                 setCombo(prevCombo => {
                     const newCombo = prevCombo + 1;
                     const comboBonus = newCombo * 2;
@@ -253,8 +262,10 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 soundManager.playSuccess();
                 setTimeout(() => setMessage(null), 800);
             } else {
-                // FAIL (Wrong Target)
+                // FAIL (Wrong Target) - 배칭 최적화
                 flushCombo();
+
+                // 상태 업데이트를 하나의 함수로 묶기
                 setScore(s => Math.max(0, s - 30));
                 setHp(h => Math.max(0, h - 10));
                 setMessage({ text: "FAILED!", color: "#ff4757" });
@@ -267,8 +278,6 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
             setCars(prev => prev.map(c => c.id === target.id ? { ...c, captured: true } : c));
         } else {
             // Check for Late Click (Avoid Double Punishment)
-            // If a speeding car recently passed (and we already took -20 HP damage for it),
-            // don't punish the user again for clicking late.
             const lateTarget = cars.find(car =>
                 car.lane === lane &&
                 car.y >= zoneBottom + 5 &&
@@ -283,8 +292,9 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 setTimeout(() => setMessage(null), 500);
                 // No sound or failure effect
             } else {
-                // FAIL (Truly Empty Ground)
+                // FAIL (Truly Empty Ground) - 배칭 최적화
                 flushCombo();
+
                 setScore(s => Math.max(0, s - 30));
                 setHp(h => Math.max(0, h - 10));
                 setMessage({ text: "MISS!", color: "#ff4757" });
@@ -298,9 +308,17 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
     const update = useCallback((time: number) => {
         if (isTransitioning) {
+            lastFrameTime.current = time; // 트랜지션 중에도 시간 업데이트
             gameLoopRef.current = requestAnimationFrame(update);
             return;
         }
+
+        // 델타 타임 계산 (밀리초 -> 초 단위)
+        // 첫 프레임이거나 비정상적으로 큰 델타는 제한
+        const deltaTime = lastFrameTime.current === 0
+            ? 0.016 // 첫 프레임은 ~60fps 가정
+            : Math.min((time - lastFrameTime.current) / 1000, 0.1); // 최대 100ms (10fps) 제한
+        lastFrameTime.current = time;
 
         // Phase check
         const currentConfig = GAME_SETTINGS.PHASES[phase];
@@ -391,7 +409,11 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     }
                 }
 
-                const fallingSpeed = nextSpeed / GAME_SETTINGS.PHYSICS.SPEED_COEFFICIENT;
+                // 델타 타임 기반 이동 계산
+                // 기존: fallingSpeed = speed / SPEED_COEFFICIENT (프레임당 이동량)
+                // 변경: 초당 이동량을 계산하고 deltaTime을 곱함
+                const speedPerSecond = (nextSpeed / GAME_SETTINGS.PHYSICS.SPEED_COEFFICIENT) * 60; // 60fps 기준 환산
+                const fallingSpeed = speedPerSecond * deltaTime;
                 const nextY = car.y + fallingSpeed;
                 lastLaneSpawnY.current[car.lane] = nextY;
 
@@ -434,6 +456,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     clearInterval(timer);
                     setIsTransitioning(false);
                     lastSpawnTime.current = performance.now();
+                    lastFrameTime.current = 0; // 델타 타임 초기화
                     return null;
                 }
                 return prev - 1;
@@ -686,7 +709,8 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
             <ComboDisplay combo={combo} comboScore={comboScore} />
 
             {/* Debug/Abandon */}
-            <div className="absolute bottom-4 z-50">
+            <div className="absolute bottom-4 z-50 flex items-center gap-4">
+                <GameBGMToggle />
                 <button
                     onClick={() => {
                         soundManager.playClick();
@@ -698,6 +722,38 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 </button>
             </div>
         </div>
+    );
+};
+
+// --- Sub-Components ---
+
+// 게임 중 BGM 토글 버튼
+const GameBGMToggle: React.FC = () => {
+    const [isBGMOn, setIsBGMOn] = useState(false);
+
+    useEffect(() => {
+        setIsBGMOn(soundManager.isBGMPlaying());
+    }, []);
+
+    const handleToggle = () => {
+        soundManager.playClick();
+        const newState = soundManager.toggleBGM();
+        setIsBGMOn(newState);
+    };
+
+    return (
+        <button
+            onClick={handleToggle}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all backdrop-blur-sm ${isBGMOn
+                    ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
+                    : 'bg-gray-700/20 border-gray-600/30 text-gray-400'
+                }`}
+        >
+            <span className="flex items-center gap-1">
+                <span>{isBGMOn ? '🔊' : '🔇'}</span>
+                <span>BGM</span>
+            </span>
+        </button>
     );
 };
 

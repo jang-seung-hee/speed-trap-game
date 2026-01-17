@@ -37,6 +37,11 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) 
 
   return (
     <div className="relative flex flex-col items-center justify-center w-full h-screen overflow-hidden bg-gray-900 text-white">
+      {/* BGM 토글 버튼 - 좌상단 */}
+      <div className="absolute top-6 left-6 z-30">
+        <BGMToggleButton />
+      </div>
+
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
@@ -150,10 +155,42 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) 
       </div>
 
       {/* 푸터 문구 */}
-      <div className="absolute bottom-8 text-gray-500 text-sm font-mono">
+      <div className="absolute bottom-8 z-20 text-gray-500 text-sm font-mono">
         © 2026 SPEED TRAP PROJECT
       </div>
     </div>
+  );
+};
+
+// BGM 토글 버튼 컴포넌트
+const BGMToggleButton: React.FC = () => {
+  const [isBGMOn, setIsBGMOn] = useState(false);
+
+  useEffect(() => {
+    setIsBGMOn(soundManager.isBGMPlaying());
+  }, []);
+
+  const handleToggle = () => {
+    soundManager.playClick();
+    const newState = soundManager.toggleBGM();
+    setIsBGMOn(newState);
+  };
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={handleToggle}
+      className={`px-6 py-2 rounded-full font-bold text-sm border transition-all backdrop-blur-sm ${isBGMOn
+        ? 'bg-blue-500/20 border-blue-400/50 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+        : 'bg-gray-700/20 border-gray-600/50 text-gray-400'
+        }`}
+    >
+      <span className="flex items-center gap-2">
+        <span className="text-lg">{isBGMOn ? '🔊' : '🔇'}</span>
+        <span className="tracking-wider">BGM {isBGMOn ? 'ON' : 'OFF'}</span>
+      </span>
+    </motion.button>
   );
 };
 

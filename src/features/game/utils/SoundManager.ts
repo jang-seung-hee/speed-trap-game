@@ -7,12 +7,14 @@ export class SoundManager {
         '/KnockOut - TrackTribe.mp3'
     ];
     private currentBgmIndex: number = -1;
+    private shutterBuffer: AudioBuffer | null = null; // 셔터 사운드 버퍼 캐싱
 
     constructor() {
         if (typeof window !== 'undefined') {
             const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
             if (AudioContextClass) {
                 this.ctx = new AudioContextClass();
+                this.preloadShutterSound(); // 셔터 사운드 미리 생성
             }
 
             // BGM 초기화
@@ -40,10 +42,10 @@ export class SoundManager {
         }
     }
 
-    // 셔터음 (White Noise Burst)
-    public playShutter() {
+    // 셔터 사운드 버퍼 미리 생성 (성능 최적화)
+    private preloadShutterSound() {
         const ctx = this.getContext();
-        if (!ctx || this.isMuted) return;
+        if (!ctx) return;
 
         const bufferSize = ctx.sampleRate * 0.1; // 0.1 sec
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -53,8 +55,22 @@ export class SoundManager {
             data[i] = Math.random() * 2 - 1;
         }
 
+        this.shutterBuffer = buffer;
+    }
+
+    // 셔터음 (White Noise Burst) - 최적화 버전
+    public playShutter() {
+        const ctx = this.getContext();
+        if (!ctx || this.isMuted) return;
+
+        // 버퍼가 없으면 즉시 생성 (fallback)
+        if (!this.shutterBuffer) {
+            this.preloadShutterSound();
+            if (!this.shutterBuffer) return;
+        }
+
         const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = this.shutterBuffer;
         const gain = ctx.createGain();
 
         gain.gain.setValueAtTime(0.5, ctx.currentTime);
@@ -256,6 +272,22 @@ export class SoundManager {
             this.bgmAudio.muted = this.isMuted;
         }
         return this.isMuted;
+    }
+
+    public toggleBGM(): boolean {
+        if (!this.bgmAudio) return false;
+
+        if (this.bgmAudio.paused) {
+            this.playBGM();
+            return true; // BGM ON
+        } else {
+            this.bgmAudio.pause();
+            return false; // BGM OFF
+        }
+    }
+
+    public isBGMPlaying(): boolean {
+        return this.bgmAudio ? !this.bgmAudio.paused : false;
     }
 }
 

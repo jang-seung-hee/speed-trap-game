@@ -26,7 +26,7 @@ export const GAME_SETTINGS = {
     /** 기본 규칙 설정 */
     TARGET_SPEED: 100,       // [과속 기준] 이 속도를 초과하면 빨간 숫자로 표시되며 단속 대상이 됩니다.
     LANES: 5,                // [도로 환경] 도로의 전체 차선 수 (숫자를 바꾸면 실시간으로 차선 수가 변경됩니다)
-    ZONE_BOTTOM_FIXED: 85,   // [단속 구역 위치] 단속 게이트가 화면 하단으로부터 몇 % 지점에 고정될지 설정
+    ZONE_BOTTOM_FIXED: 95,   // [단속 구역 위치] 단속 게이트가 화면 하단으로부터 몇 % 지점에 고정될지 설정
 
     /** 물리 및 시스템 설정 */
     PHYSICS: {
@@ -105,7 +105,7 @@ export const GAME_SETTINGS = {
         },
         4: {
             scoreLimit: 8000,
-            zoneHeight: 17,
+            zoneHeight: 25,
             trickProb: 0.0,
             nitroProb: 0.3,      // 가속해서 도망가는 차들이 더 자주 등장
             swerveProb: 0,
