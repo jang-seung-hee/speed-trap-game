@@ -115,5 +115,9 @@ body {
   .animate-road-scroll {
     animation: road-scroll 0.2s linear infinite;
     will-change: background-position;
+    transform: translate3d(0, 0, 0);
+    /* Force GPU */
+    backface-visibility: hidden;
+    perspective: 1000;
   }
 }

@@ -350,15 +350,20 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
         const zoneTop = GAME_SETTINGS.ZONE_BOTTOM_FIXED - config.zoneHeight;
 
         setCars(prev => {
-            return prev.map(car => {
+            let changed = false;
+            const nextCars = [];
+
+            for (let i = 0; i < prev.length; i++) {
+                const car = prev[i];
                 let nextSpeed = car.speed;
                 let nextLane = car.lane;
                 let nextActionDone = car.actionDone;
+                let stoppedAt = car.stoppedAt;
 
                 if (!car.actionDone && car.y > zoneTop - 12) {
                     if (car.type === 'TRICK') nextSpeed = 92;
-                    if (car.type === 'NITRO') nextSpeed = 138;
-                    if (car.type === 'SWERVE') {
+                    else if (car.type === 'NITRO') nextSpeed = 138;
+                    else if (car.type === 'SWERVE') {
                         const possibleLanes = [];
                         if (car.lane > 0) possibleLanes.push(car.lane - 1);
                         if (car.lane < GAME_SETTINGS.LANES - 1) possibleLanes.push(car.lane + 1);
@@ -372,14 +377,13 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 if (car.type === 'STOP_AND_GO' && !car.captured) {
                     const stopLine = zoneTop - 15;
                     if (!car.actionDone && car.y >= stopLine) {
-                        if (!car.stoppedAt) {
+                        if (!stoppedAt) {
                             nextSpeed = 0;
-                            car.stoppedAt = time;
+                            stoppedAt = time;
                         } else {
-                            const stopDuration = time - car.stoppedAt;
-                            if (stopDuration < 3000) {
-                                nextSpeed = 0;
-                            } else {
+                            const stopDuration = time - stoppedAt;
+                            if (stopDuration < 3000) nextSpeed = 0;
+                            else {
                                 nextSpeed = 130;
                                 nextActionDone = true;
                             }
@@ -389,17 +393,15 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
                 const fallingSpeed = nextSpeed / GAME_SETTINGS.PHYSICS.SPEED_COEFFICIENT;
                 const nextY = car.y + fallingSpeed;
-
                 lastLaneSpawnY.current[car.lane] = nextY;
 
+                // Penalty Check
                 if (car.y < GAME_SETTINGS.ZONE_BOTTOM_FIXED && nextY >= GAME_SETTINGS.ZONE_BOTTOM_FIXED && !car.captured && car.speed >= GAME_SETTINGS.TARGET_SPEED) {
-                    // Flush Combo Logic inline
                     if (comboScore > 0) {
-                        setScore(prev => prev + comboScore);
+                        setScore(s => s + comboScore);
                         setComboScore(0);
                         setCombo(0);
                     }
-
                     setHp(h => Math.max(0, h - 20));
                     setMessage({ text: "MISSED!", color: "#eb4d4b" });
                     soundManager.playFail();
@@ -407,15 +409,18 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     setTimeout(() => setMessage(null), 500);
                 }
 
-                return {
-                    ...car,
-                    y: nextY,
-                    speed: nextSpeed,
-                    lane: nextLane,
-                    actionDone: nextActionDone,
-                    stoppedAt: (car.type === 'STOP_AND_GO' && nextSpeed === 0 && !car.stoppedAt) ? time : car.stoppedAt
-                };
-            }).filter(car => car.y < 110);
+                // If no changes, keep the same object to avoid re-renders
+                if (car.y !== nextY || car.speed !== nextSpeed || car.lane !== nextLane || car.actionDone !== nextActionDone) {
+                    nextCars.push({ ...car, y: nextY, speed: nextSpeed, lane: nextLane, actionDone: nextActionDone, stoppedAt });
+                    changed = true;
+                } else {
+                    nextCars.push(car);
+                }
+            }
+
+            // Remove off-screen cars
+            const finalCars = nextCars.filter(c => c.y < 110);
+            return (changed || finalCars.length !== prev.length) ? finalCars : prev;
         });
 
         gameLoopRef.current = requestAnimationFrame(update);
