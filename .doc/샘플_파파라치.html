@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>톨게이트 파파라치: 하드코어</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; touch-action: none; }
+        #ui { width: 100%; max-width: 400px; padding: 15px; display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; box-sizing: border-box; background: #000; }
+        #game-container { position: relative; width: 100vw; max-width: 400px; height: 80vh; background: #333; border: 4px solid #555; overflow: hidden; }
+        .lane-line { position: absolute; top: 0; width: 33.33%; height: 100%; border-right: 1px solid rgba(255,255,255,0.05); pointer-events: none; }
+        
+        #toll-gate-zone { 
+            position: absolute; bottom: 80px; width: 100%; height: 160px; 
+            background: rgba(255, 255, 0, 0.08); border-top: 2px dashed yellow; border-bottom: 2px solid yellow; 
+            z-index: 1; pointer-events: none; transition: height 0.5s ease;
+        }
+
+        .car { 
+            position: absolute; width: 70px; height: 50px; background: #777; 
+            color: white; border-radius: 6px; display: flex; align-items: center; 
+            justify-content: center; font-weight: bold; font-size: 20px; 
+            transform: translateX(-50%); z-index: 10; transition: left 0.15s ease-out; 
+        }
+
+        .flash { position: absolute; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 100; }
+        @keyframes flash-ani { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+        
+        /* 알림창 대신 사용하는 오버레이 (페이즈 안내 & 게임 오버 공용) */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; text-align: center; padding: 20px; box-sizing: border-box; display: flex; }
+        #overlay h1 { color: yellow; margin-bottom: 10px; font-size: 32px; }
+        #overlay p { font-size: 18px; margin-bottom: 20px; color: #ccc; }
+        #overlay button { padding: 15px 40px; font-size: 20px; background: yellow; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: black; }
+        
+        #msg { position: absolute; top: 30%; width: 100%; text-align: center; font-size: 35px; font-weight: bold; display: none; z-index: 200; pointer-events: none; text-shadow: 0 0 10px black; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <div>PHASE: <span id="phase">1</span></div>
+    <div style="color: #ff4757;">HP: <span id="hp">100</span></div>
+    <div style="color: #2ed573;">SCORE: <span id="score">0</span></div>
+</div>
+
+<div id="game-container">
+    <div id="flash-effect" class="flash"></div>
+    <div id="toll-gate-zone"></div>
+    <div id="msg"></div>
+    
+    <div id="overlay">
+        <h1 id="phase-title">톨게이트 파파라치</h1>
+        <p id="phase-desc">100km/h 이상의 과속 차량을 촬영하세요.<br>트릭 차량을 주의하세요!</p>
+        <button id="main-btn" onclick="handleMainBtn()">START</button>
+    </div>
+    
+    <div class="lane-line" style="left:0"></div>
+    <div class="lane-line" style="left:33.33%"></div>
+    <div class="lane-line" style="left:66.66%"></div>
+
+    <div style="position:absolute; width:33.33%; height:100%; left:0; z-index:50;" onmousedown="shoot(0, event)" ontouchstart="shoot(0, event)"></div>
+    <div style="position:absolute; width:33.33%; height:100%; left:33.33%; z-index:50;" onmousedown="shoot(1, event)" ontouchstart="shoot(1, event)"></div>
+    <div style="position:absolute; width:33.33%; height:100%; left:66.66%; z-index:50;" onmousedown="shoot(2, event)" ontouchstart="shoot(2, event)"></div>
+</div>
+
+<script>
+    const container = document.getElementById('game-container');
+    const hpElement = document.getElementById('hp');
+    const scoreElement = document.getElementById('score');
+    const phaseElement = document.getElementById('phase');
+    const zoneElement = document.getElementById('toll-gate-zone');
+    const overlay = document.getElementById('overlay');
+    const phaseTitle = document.getElementById('phase-title');
+    const phaseDesc = document.getElementById('phase-desc');
+    const mainBtn = document.getElementById('main-btn');
+    const msgElement = document.getElementById('msg');
+    const flashEffect = document.getElementById('flash-effect');
+
+    let hp = 100, score = 0, phase = 1, gameActive = false, isGameOver = false;
+    let cars = [], carTimer = null, animationId = null;
+    const laneWidth = container.offsetWidth / 3;
+
+    const phaseSettings = [
+        { scoreLimit: 50, zoneHeight: 180, title: "PHASE 1: 기초 단속", desc: "정직한 과속 차량들을 잡아내세요.", trickProb: 0, nitroProb: 0, swerveProb: 0 },
+        { scoreLimit: 150, zoneHeight: 150, title: "PHASE 2: 급브레이크", desc: "구역 직전에서 속도를 줄이는 낚시 주의!", trickProb: 0.4, nitroProb: 0, swerveProb: 0 },
+        { scoreLimit: 300, zoneHeight: 120, title: "PHASE 3: 기습 가속", desc: "느리게 오다가 갑자기 밟는 차량들!", trickProb: 0.3, nitroProb: 0.4, swerveProb: 0 },
+        { scoreLimit: 500, zoneHeight: 100, title: "PHASE 4: 극한의 핸들링", desc: "구역이 좁아집니다. 차선 변경을 예측하세요!", trickProb: 0.4, nitroProb: 0.4, swerveProb: 0.5 },
+        { scoreLimit: 9999, zoneHeight: 80, title: "FINAL: 톨게이트 헬", desc: "최고의 파파라치임을 증명하세요!", trickProb: 0.5, nitroProb: 0.5, swerveProb: 0.6 }
+    ];
+
+    function handleMainBtn() {
+        if (isGameOver) {
+            location.reload(); // 게임 오버 후 재시작
+        } else {
+            startNextPhase();
+        }
+    }
+
+    function startNextPhase() {
+        overlay.style.display = 'none';
+        gameActive = true;
+        zoneElement.style.height = phaseSettings[phase-1].zoneHeight + "px";
+        spawnCar();
+        if (!animationId) update();
+    }
+
+    function triggerGameOver() {
+        gameActive = false;
+        isGameOver = true;
+        cancelAnimationFrame(animationId);
+        animationId = null;
+        clearTimeout(carTimer);
+
+        // 결과 화면 구성
+        overlay.style.display = 'flex';
+        phaseTitle.innerText = "GAME OVER";
+        phaseTitle.style.color = "#ff4757";
+        phaseDesc.innerHTML = `최종 PHASE: ${phase}<br><span style="font-size:40px; color:white;">SCORE: ${score}</span>`;
+        mainBtn.innerText = "RESTART";
+    }
+
+    function checkPhase() {
+        let currentSetting = phaseSettings[phase - 1];
+        if (score >= currentSetting.scoreLimit && phase < phaseSettings.length) {
+            phase++;
+            gameActive = false;
+            cancelAnimationFrame(animationId);
+            animationId = null;
+            clearAllCars();
+            
+            phaseElement.innerText = phase;
+            phaseTitle.innerText = phaseSettings[phase - 1].title;
+            phaseTitle.style.color = "yellow";
+            phaseDesc.innerText = phaseSettings[phase - 1].desc;
+            mainBtn.innerText = "NEXT PHASE";
+            overlay.style.display = 'flex';
+        }
+    }
+
+    function clearAllCars() {
+        cars.forEach(c => c.el.remove());
+        cars = [];
+        clearTimeout(carTimer);
+    }
+
+    function spawnCar() {
+        if (!gameActive || isGameOver) return;
+        const lane = Math.floor(Math.random() * 3);
+        const s = phaseSettings[phase - 1];
+        let speedVal = Math.floor(Math.random() * 50) + 75; 
+        let type = 'normal';
+        const rand = Math.random();
+        if (rand < s.swerveProb) type = 'swerve';
+        else if (rand < s.swerveProb + s.nitroProb) type = 'nitro';
+        else if (rand < s.swerveProb + s.nitroProb + s.trickProb) type = 'trick';
+
+        if (type === 'trick') speedVal = 125; 
+        if (type === 'nitro') speedVal = 85;  
+
+        const carEl = document.createElement('div');
+        carEl.className = 'car';
+        carEl.innerText = "?";
+        carEl.style.left = (lane * laneWidth + laneWidth/2) + 'px';
+        carEl.style.top = '-60px';
+        container.appendChild(carEl);
+
+        cars.push({
+            el: carEl, speed: speedVal, lane: lane, y: -60, captured: false,
+            type: type, actionDone: false, fallingSpeed: speedVal / 15
+        });
+
+        carTimer = setTimeout(spawnCar, Math.max(400, 1600 - (score * 3)));
+    }
+
+    function shoot(lane, event) {
+        if (!gameActive || isGameOver) return;
+        if (event) event.preventDefault();
+        flashEffect.style.animation = 'none';
+        void flashEffect.offsetWidth;
+        flashEffect.style.animation = 'flash-ani 0.1s ease-out';
+
+        const currentZoneH = parseInt(zoneElement.style.height);
+        const zoneTop = container.offsetHeight - 80 - currentZoneH;
+        const zoneBottom = container.offsetHeight - 80;
+
+        for (let car of cars) {
+            if (car.lane === lane && !car.captured) {
+                if ((car.y + 50) > zoneTop && car.y < zoneBottom) {
+                    processCapture(car);
+                    break;
+                }
+            }
+        }
+    }
+
+    function processCapture(car) {
+        car.captured = true;
+        car.el.innerText = Math.floor(car.speed);
+        if (car.speed >= 100) {
+            score += 10;
+            showMsg("SUCCESS!", "#2ed573");
+            car.el.style.backgroundColor = "#2ed573";
+        } else {
+            score -= 30; hp -= 10;
+            showMsg("TRICKED!", "#ff4757");
+            car.el.style.backgroundColor = "#ff4757";
+        }
+        scoreElement.innerText = score;
+        hpElement.innerText = hp;
+        if (hp <= 0) triggerGameOver();
+        else checkPhase();
+    }
+
+    function showMsg(txt, color) {
+        msgElement.innerText = txt; msgElement.style.color = color;
+        msgElement.style.display = 'block';
+        setTimeout(() => msgElement.style.display = 'none', 500);
+    }
+
+    function update() {
+        if (!gameActive || isGameOver) return;
+        
+        const currentZoneH = parseInt(zoneElement.style.height);
+        const zoneTop = container.offsetHeight - 80 - currentZoneH;
+
+        for (let i = cars.length - 1; i >= 0; i--) {
+            const car = cars[i];
+            if (!car.actionDone && car.y > (zoneTop - 100)) {
+                if (car.type === 'trick') car.speed = 92; 
+                else if (car.type === 'nitro') car.speed = 135; 
+                else if (car.type === 'swerve') {
+                    const newLane = car.lane === 0 ? 1 : (car.lane === 2 ? 1 : (Math.random() > 0.5 ? 0 : 2));
+                    car.lane = newLane;
+                    car.el.style.left = (newLane * laneWidth + laneWidth/2) + 'px';
+                }
+                car.fallingSpeed = car.speed / 15;
+                car.actionDone = true;
+            }
+            car.y += car.fallingSpeed;
+            car.el.style.top = car.y + 'px';
+
+            if (car.y > (zoneTop - 50) && !car.captured) {
+                car.el.innerText = Math.floor(car.speed);
+                car.el.style.backgroundColor = car.speed >= 100 ? "#eb4d4b" : "#eee";
+                car.el.style.color = car.speed >= 100 ? "white" : "black";
+            }
+
+            if (car.y > container.offsetHeight) {
+                if (car.speed >= 100 && !car.captured) { 
+                    hp -= 20; hpElement.innerText = hp; 
+                    if (hp <= 0) { triggerGameOver(); return; }
+                }
+                car.el.remove(); cars.splice(i, 1);
+            }
+        }
+        animationId = requestAnimationFrame(update);
+    }
+</script>
+</body>
+</html>
