@@ -56,7 +56,7 @@ const GameMain: React.FC = () => {
             )}
 
             {gameState === 'GAMEOVER' && (
-                <div className="relative flex flex-col items-center justify-center h-full text-white bg-gray-900 z-50 p-6 text-center overflow-hidden">
+                <div className="relative flex flex-col items-center justify-center h-full text-white bg-gray-900 z-50 p-6 text-center overflow-y-auto">
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0">
                         <img
@@ -67,8 +67,8 @@ const GameMain: React.FC = () => {
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
                     </div>
 
-                    <div className="relative z-10 w-full h-full flex flex-col items-center justify-center overflow-hidden">
-                        <div className="w-full max-w-md py-10">
+                    <div className="relative z-10 w-full h-full flex flex-col items-center justify-center py-10">
+                        <div className="w-full max-w-md">
                             <MotionDivPlaceholder>
                                 <div className="relative inline-block mb-2 mt-10">
                                     {/* Dark smoke/shadow effect for readability */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { GAME_SETTINGS, type CarType, type PhaseConfig } from '../constants';
@@ -463,6 +463,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
         if (!isPointerInside) setIsPointerInside(true);
 
         if (cursorRef.current) {
+            // 커서 위치를 즉시 업데이트 (깜빡임 방지)
             cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
         }
     };
@@ -482,12 +483,13 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 }}
             >
                 <motion.div
-                    className="absolute inset-0 bg-black/10"
+                    className="absolute inset-0 bg-black/10 will-change-transform"
                     animate={{ backgroundPositionY: ['0px', '300px'] }}
                     transition={{ repeat: Infinity, duration: 0.2, ease: "linear" }}
                     style={{
                         backgroundImage: 'url("/highway_bg.png")',
                         backgroundSize: '300px 300px',
+                        willChange: 'background-position'
                     }}
                 />
             </div>
@@ -566,25 +568,11 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     </div>
                 ))}
 
-                {/* Damage Vignette Layer (Low HP Visual Effect) */}
-                <div
-                    className={`absolute inset-0 z-35 pointer-events-none transition-all duration-300 ${hp < maxHp * 0.3 ? 'animate-pulse' : ''}`}
-                    style={{
-                        background: `radial-gradient(circle, transparent ${Math.max(0, 70 - (1 - hp / maxHp) * 50)}%, rgba(220, 20, 60, ${(1 - hp / maxHp) * 0.6}) 100%)`,
-                        boxShadow: `inset 0 0 ${Math.max(0, (1 - hp / maxHp) * 150)}px ${Math.max(0, (1 - hp / maxHp) * 80)}px rgba(255, 0, 0, ${(1 - hp / maxHp) * 0.7})`
-                    }}
-                />
+                {/* Damage Vignette Layer (Low HP Visual Effect) - 최적화됨 */}
+                <DamageVignette hp={hp} maxHp={maxHp} />
 
-                {/* Screen Crack Layers */}
-                <div className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
-                    <AnimatePresence>
-                        {hp <= 80 && <ScreenCrack key="crack-1" style={{ top: '10%', left: '5%', rotate: '15deg', scale: 0.8 }} />}
-                        {hp <= 60 && <ScreenCrack key="crack-2" style={{ bottom: '15%', right: '10%', rotate: '-20deg', scale: 1.1 }} />}
-                        {hp <= 40 && <ScreenCrack key="crack-3" style={{ top: '40%', left: '20%', rotate: '45deg', scale: 1.3 }} />}
-                        {hp <= 20 && <ScreenCrack key="crack-4" style={{ bottom: '40%', right: '25%', rotate: '180deg', scale: 1.5 }} />}
-                        {hp <= 10 && <ScreenCrack key="crack-5" style={{ top: '50%', left: '50%', rotate: '-90deg', scale: 2, opacity: 0.8 }} />}
-                    </AnimatePresence>
-                </div>
+                {/* Screen Crack Layers - 최적화됨 */}
+                <ScreenCracks hp={hp} />
             </div>
 
             {/* VFX: Shutter Flash */}
@@ -702,16 +690,16 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 )}
             </AnimatePresence>
 
-            {/* Custom Mouse Cursor */}
+            {/* Custom Mouse Cursor - 깜빡임 방지 최적화 */}
             <AnimatePresence>
                 {isPointerInside && (
                     <motion.div
                         ref={cursorRef}
                         className="fixed top-0 left-0 z-[300] pointer-events-none"
-                        initial={{ opacity: 0, scale: 0.5 }}
+                        initial={{ opacity: 0, scale: 0.5, x: '50vw', y: '50vh' }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
                         style={{ willChange: 'transform' }}
                     >
                         <div className="relative w-12 h-12 flex items-center justify-center">
@@ -724,32 +712,8 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 )}
             </AnimatePresence>
 
-            {/* Combo Monitor (Bottom Right) */}
-            <AnimatePresence>
-                {combo > 0 && (
-                    <div className="absolute bottom-12 right-6 z-50 pointer-events-none">
-                        <motion.div
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 50, opacity: 0 }}
-                            className="flex flex-col items-end"
-                        >
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-6xl font-black text-yellow-400 italic tracking-tighter drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]"
-                                    style={{ textShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}>
-                                    {combo}
-                                </span>
-                                <span className="text-xl font-black text-white/80 italic uppercase tracking-widest">
-                                    COMBO
-                                </span>
-                            </div>
-                            <div className="text-lg font-bold text-green-400 italic drop-shadow-md">
-                                +{comboScore} SCORE
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            {/* Combo Monitor (Bottom Right) - 최적화됨 */}
+            <ComboDisplay combo={combo} comboScore={comboScore} />
 
             {/* Debug/Abandon */}
             <div className="absolute bottom-4 z-50">
@@ -769,11 +733,103 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
 // --- Sub-Components ---
 
+// --- 최적화된 서브 컴포넌트들 ---
+
+/** 핏빛 시야 효과 - 메모이제이션으로 최적화 */
+const DamageVignette: React.FC<{ hp: number; maxHp: number }> = React.memo(({ hp, maxHp }) => {
+    const damageRatio = useMemo(() => 1 - hp / maxHp, [hp, maxHp]);
+    const isLowHp = useMemo(() => hp < maxHp * 0.3, [hp, maxHp]);
+
+    // CSS 변수로 계산 결과 전달 (리플로우 최소화)
+    const vignetteStyle = useMemo(() => ({
+        '--damage-ratio': damageRatio,
+        '--vignette-start': `${Math.max(0, 70 - damageRatio * 50)}%`,
+        '--vignette-opacity': damageRatio * 0.6,
+        '--shadow-blur': `${Math.max(0, damageRatio * 150)}px`,
+        '--shadow-spread': `${Math.max(0, damageRatio * 80)}px`,
+        '--shadow-opacity': damageRatio * 0.7,
+    } as React.CSSProperties), [damageRatio]);
+
+    return (
+        <div
+            className={`absolute inset-0 z-35 pointer-events-none transition-opacity duration-300 ${isLowHp ? 'animate-pulse' : ''}`}
+            style={{
+                background: `radial-gradient(circle, transparent var(--vignette-start), rgba(220, 20, 60, var(--vignette-opacity)) 100%)`,
+                boxShadow: `inset 0 0 var(--shadow-blur) var(--shadow-spread) rgba(255, 0, 0, var(--shadow-opacity))`,
+                ...vignetteStyle
+            }}
+        />
+    );
+}, (prev, next) => prev.hp === next.hp && prev.maxHp === next.maxHp);
+
+/** 콤보 표시 - GPU 가속 속성만 사용하여 최적화 */
+const ComboDisplay: React.FC<{ combo: number; comboScore: number }> = React.memo(({ combo, comboScore }) => {
+    if (combo <= 0) return null;
+
+    return (
+        <div className="absolute bottom-12 right-6 z-50 pointer-events-none">
+            <motion.div
+                initial={{ opacity: 0, transform: 'translateX(50px)' }}
+                animate={{ opacity: 1, transform: 'translateX(0)' }}
+                exit={{ opacity: 0, transform: 'translateX(50px)' }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-end will-change-transform"
+            >
+                <div className="flex items-baseline gap-2">
+                    <span
+                        className="text-6xl font-black text-yellow-400 italic tracking-tighter drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]"
+                        style={{ textShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}
+                    >
+                        {combo}
+                    </span>
+                    <span className="text-xl font-black text-white/80 italic uppercase tracking-widest">
+                        COMBO
+                    </span>
+                </div>
+                <div className="text-lg font-bold text-green-400 italic drop-shadow-md">
+                    +{comboScore} SCORE
+                </div>
+            </motion.div>
+        </div>
+    );
+}, (prev, next) => prev.combo === next.combo && prev.comboScore === next.comboScore);
+
+/** 화면 균열 효과 - 조건부 렌더링 최적화 */
+const ScreenCracks: React.FC<{ hp: number }> = React.memo(({ hp }) => {
+    const cracks = useMemo(() => {
+        const crackList = [];
+        if (hp <= 80) crackList.push({ key: 'crack-1', style: { top: '10%', left: '5%', rotate: '15deg', scale: 0.8 } });
+        if (hp <= 60) crackList.push({ key: 'crack-2', style: { bottom: '15%', right: '10%', rotate: '-20deg', scale: 1.1 } });
+        if (hp <= 40) crackList.push({ key: 'crack-3', style: { top: '40%', left: '20%', rotate: '45deg', scale: 1.3 } });
+        if (hp <= 20) crackList.push({ key: 'crack-4', style: { bottom: '40%', right: '25%', rotate: '180deg', scale: 1.5 } });
+        if (hp <= 10) crackList.push({ key: 'crack-5', style: { top: '50%', left: '50%', rotate: '-90deg', scale: 2, opacity: 0.8 } });
+        return crackList;
+    }, [hp]);
+
+    if (cracks.length === 0) return null;
+
+    return (
+        <div className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
+            <AnimatePresence>
+                {cracks.map(crack => (
+                    <ScreenCrack key={crack.key} style={crack.style} />
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+}, (prev, next) => {
+    // HP가 균열 임계값을 넘지 않으면 리렌더링 방지
+    const thresholds = [80, 60, 40, 20, 10];
+    const prevCrossed = thresholds.filter(t => prev.hp <= t).length;
+    const nextCrossed = thresholds.filter(t => next.hp <= t).length;
+    return prevCrossed === nextCrossed;
+});
+
 const ScreenCrack: React.FC<{ style: React.CSSProperties }> = React.memo(({ style }) => (
     <motion.div
         initial={{ opacity: 0, scale: 2 }}
         animate={{ opacity: 0.6, scale: style.scale as number }}
-        className="absolute"
+        className="absolute will-change-transform"
         style={{ ...style, width: '250px', height: '250px' }}
     >
         <svg viewBox="0 0 200 200" className="w-full h-full text-white/40 drop-shadow-md">
@@ -792,8 +848,8 @@ const ScreenCrack: React.FC<{ style: React.CSSProperties }> = React.memo(({ styl
 const CarVisual: React.FC<{ car: Car }> = React.memo(({ car }) => {
     // 사용자의 요청대로 속도가 자동차 디자인보다 중요하므로, 항상 어느 정도 보이게 설정
     // 단속 구역 근처에서는 더 환하게 강조됨
-    const isNearZone = car.y > GAME_SETTINGS.ZONE_BOTTOM_FIXED - 40;
-    const showDetail = isNearZone || car.captured;
+    const isNearZone = useMemo(() => car.y > GAME_SETTINGS.ZONE_BOTTOM_FIXED - 40, [car.y]);
+    const showDetail = useMemo(() => isNearZone || car.captured, [isNearZone, car.captured]);
 
     const renderCarBody = () => {
         const bodyClass = car.captured
