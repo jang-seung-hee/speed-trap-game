@@ -569,15 +569,19 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 </div>
 
                 {/* Cars Rendering */}
-                {/* Cars Rendering */}
                 {cars.map(car => (
                     <div
                         key={car.id}
-                        className="absolute z-20 pointer-events-none will-change-transform"
+                        className="absolute z-20 pointer-events-none"
                         style={{
-                            left: 0,
-                            top: 0,
-                            transform: `translate3d(${car.lane * (100 / GAME_SETTINGS.LANES) + (100 / GAME_SETTINGS.LANES / 2)}cqw, ${car.y}cqh, 0) translate(-50%, -50%)`
+                            // Y축 이동 (즉시 반영, transition 없음)
+                            top: `${car.y}cqh`,
+                            // X축 이동 (차선 변경 시 부드럽게)
+                            left: `${car.lane * (100 / GAME_SETTINGS.LANES) + (100 / GAME_SETTINGS.LANES / 2)}cqw`,
+                            transform: 'translate(-50%, -50%)',
+                            // 차선 변경만 애니메이션 (0.15초, 빠른 속도)
+                            transition: 'left 0.15s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            willChange: 'left'
                         }}
                     >
                         <CarVisual car={car} />
@@ -745,8 +749,8 @@ const GameBGMToggle: React.FC = () => {
         <button
             onClick={handleToggle}
             className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all backdrop-blur-sm ${isBGMOn
-                    ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
-                    : 'bg-gray-700/20 border-gray-600/30 text-gray-400'
+                ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
+                : 'bg-gray-700/20 border-gray-600/30 text-gray-400'
                 }`}
         >
             <span className="flex items-center gap-1">

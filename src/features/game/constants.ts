@@ -64,7 +64,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 30,
             minSpeed: 88,        // 차들의 최저 주행 속도
             maxSpeed: 110,       // 과속 차량이 내는 최고 속도
-            overspeedProb: 0.4,  // 10대 중 2대 정도만 과속 차량 (나머진 100 이하 정속)
+            overspeedProb: 0.6,  // 10대 중 2대 정도만 과속 차량 (나머진 100 이하 정속)
             description: "기초 단속: 100km/h 초과 차량을 촬영하세요."
         },
         2: {
@@ -80,7 +80,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 30, // 간격이 Phase 1보다 조금 촘촘해짐
             minSpeed: 92,
             maxSpeed: 125,
-            overspeedProb: 0.5,  // 과속 차량 비중 증가
+            overspeedProb: 0.6,  // 과속 차량 비중 증가
             description: "주의: 갑자기 속도를 줄이는 차량이 나타납니다."
         },
         3: {
@@ -100,7 +100,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 35, // 차량들이 꽤 빽빽하게 이어 붙어서 옵니다.
             minSpeed: 88,
             maxSpeed: 115,
-            overspeedProb: 0.4,
+            overspeedProb: 0.6,
             description: "위험: 차선을 변경하며 단속을 회피합니다."
         },
         4: {
@@ -116,7 +116,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 40,
             minSpeed: 88,
             maxSpeed: 115,
-            overspeedProb: 0.2,
+            overspeedProb: 0.6,
             description: "경고: 급가속하는 차량이 있습니다."
         },
         5: {
@@ -132,7 +132,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 35,
             minSpeed: 88,
             maxSpeed: 120,
-            overspeedProb: 0.4,
+            overspeedProb: 0.6,
             description: "주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다."
         },
         6: {
@@ -148,7 +148,7 @@ export const GAME_SETTINGS = {
             spawnYThreshold: 30,
             minSpeed: 95,
             maxSpeed: 130,       // 오토바이는 더 빠름
-            overspeedProb: 0.5,
+            overspeedProb: 0.6,
             description: "경고: 작고 빠른 오토바이 부대가 출현했습니다."
         },
         7: {
