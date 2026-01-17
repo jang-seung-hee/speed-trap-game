@@ -31,8 +31,6 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     const [score, setScore] = useState(0);
     const [phase, setPhase] = useState(initialPhase);
     const [cars, setCars] = useState<Car[]>([]);
-    const [flash, setFlash] = useState(false);
-    const [shake, setShake] = useState(false);
     const [message, setMessage] = useState<{ text: string; color: string } | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(true); // 처음 시작 시 브리핑 표시
     const [countdown, setCountdown] = useState<number | null>(null);
@@ -92,10 +90,6 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
         scoreRef.current = score;
     }, [score]);
 
-    const triggerShake = () => {
-        setShake(true);
-        setTimeout(() => setShake(false), 300);
-    };
 
     const flushCombo = useCallback(() => {
         if (comboScore > 0) {
@@ -190,10 +184,8 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     }, [phase]);
 
     const capture = (lane: number) => {
-        // Shutter flash effect
-        setFlash(true);
+        // Shutter flash effect 제거 (성능 최적화)
         soundManager.playShutter();
-        setTimeout(() => setFlash(false), 80);
 
         const config = GAME_SETTINGS.PHASES[phase] || GAME_SETTINGS.PHASES[5];
         const zoneHeight = config.zoneHeight;
@@ -267,7 +259,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 setHp(h => Math.max(0, h - 10));
                 setMessage({ text: "FAILED!", color: "#ff4757" });
                 soundManager.playFail();
-                triggerShake();
+
                 isPerfectRoundRef.current = false;
                 setTimeout(() => setMessage(null), 500);
             }
@@ -297,7 +289,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 setHp(h => Math.max(0, h - 10));
                 setMessage({ text: "MISS!", color: "#ff4757" });
                 soundManager.playFail();
-                triggerShake();
+
                 isPerfectRoundRef.current = false;
                 setTimeout(() => setMessage(null), 500);
             }
@@ -409,7 +401,6 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     }
 
                     setHp(h => Math.max(0, h - 20));
-                    triggerShake();
                     setMessage({ text: "MISSED!", color: "#eb4d4b" });
                     soundManager.playFail();
                     isPerfectRoundRef.current = false;
@@ -470,7 +461,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
     return (
         <div
-            className={`relative w-full h-screen flex flex-col items-center bg-black transition-transform duration-75 overflow-hidden cursor-none ${shake ? 'scale-[1.02] translate-x-1' : ''}`}
+            className="relative w-full h-screen flex flex-col items-center bg-black overflow-hidden cursor-none"
             onPointerMove={handlePointerMove}
             onPointerLeave={() => setIsPointerInside(false)}
         >
@@ -482,14 +473,11 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                     backgroundSize: '300px 300px',
                 }}
             >
-                <motion.div
-                    className="absolute inset-0 bg-black/10 will-change-transform"
-                    animate={{ backgroundPositionY: ['0px', '300px'] }}
-                    transition={{ repeat: Infinity, duration: 0.2, ease: "linear" }}
+                <div
+                    className="absolute inset-0 bg-black/10 animate-road-scroll"
                     style={{
                         backgroundImage: 'url("/highway_bg.png")',
                         backgroundSize: '300px 300px',
-                        willChange: 'background-position'
                     }}
                 />
             </div>
@@ -567,42 +555,19 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                         <CarVisual car={car} />
                     </div>
                 ))}
-
-                {/* Damage Vignette Layer (Low HP Visual Effect) - 최적화됨 */}
-                <DamageVignette hp={hp} maxHp={maxHp} />
-
-                {/* Screen Crack Layers - 최적화됨 */}
-                <ScreenCracks hp={hp} />
             </div>
 
-            {/* VFX: Shutter Flash */}
-            <AnimatePresence>
-                {flash && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.9 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-white z-[100] pointer-events-none"
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* VFX: Messages */}
+            {/* VFX: Messages - 경량화 (CSS Keyframes 활용) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-                <AnimatePresence mode="wait">
-                    {message && (
-                        <motion.div
-                            key={message.text}
-                            initial={{ scale: 0.5, opacity: 0, rotate: -5 }}
-                            animate={{ scale: 1.5, opacity: 1, rotate: 0 }}
-                            exit={{ scale: 2, opacity: 0 }}
-                            className="text-6xl font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]"
-                            style={{ color: message.color }}
-                        >
-                            {message.text}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {message && (
+                    <div
+                        key={message.text}
+                        className="text-6xl font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-game-message"
+                        style={{ color: message.color }}
+                    >
+                        {message.text}
+                    </div>
+                )}
             </div>
 
             {/* Stage Transition Overlay */}
@@ -735,46 +700,13 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
 // --- 최적화된 서브 컴포넌트들 ---
 
-/** 핏빛 시야 효과 - 메모이제이션으로 최적화 */
-const DamageVignette: React.FC<{ hp: number; maxHp: number }> = React.memo(({ hp, maxHp }) => {
-    const damageRatio = useMemo(() => 1 - hp / maxHp, [hp, maxHp]);
-    const isLowHp = useMemo(() => hp < maxHp * 0.3, [hp, maxHp]);
-
-    // CSS 변수로 계산 결과 전달 (리플로우 최소화)
-    const vignetteStyle = useMemo(() => ({
-        '--damage-ratio': damageRatio,
-        '--vignette-start': `${Math.max(0, 70 - damageRatio * 50)}%`,
-        '--vignette-opacity': damageRatio * 0.6,
-        '--shadow-blur': `${Math.max(0, damageRatio * 150)}px`,
-        '--shadow-spread': `${Math.max(0, damageRatio * 80)}px`,
-        '--shadow-opacity': damageRatio * 0.7,
-    } as React.CSSProperties), [damageRatio]);
-
-    return (
-        <div
-            className={`absolute inset-0 z-35 pointer-events-none transition-opacity duration-300 ${isLowHp ? 'animate-pulse' : ''}`}
-            style={{
-                background: `radial-gradient(circle, transparent var(--vignette-start), rgba(220, 20, 60, var(--vignette-opacity)) 100%)`,
-                boxShadow: `inset 0 0 var(--shadow-blur) var(--shadow-spread) rgba(255, 0, 0, var(--shadow-opacity))`,
-                ...vignetteStyle
-            }}
-        />
-    );
-}, (prev, next) => prev.hp === next.hp && prev.maxHp === next.maxHp);
-
-/** 콤보 표시 - GPU 가속 속성만 사용하여 최적화 */
+/** 콤보 표시 - 경량화 버전 (CSS 최적화) */
 const ComboDisplay: React.FC<{ combo: number; comboScore: number }> = React.memo(({ combo, comboScore }) => {
     if (combo <= 0) return null;
 
     return (
-        <div className="absolute bottom-12 right-6 z-50 pointer-events-none">
-            <motion.div
-                initial={{ opacity: 0, transform: 'translateX(50px)' }}
-                animate={{ opacity: 1, transform: 'translateX(0)' }}
-                exit={{ opacity: 0, transform: 'translateX(50px)' }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-end will-change-transform"
-            >
+        <div key={combo} className="absolute bottom-12 right-6 z-50 pointer-events-none animate-game-combo">
+            <div className="flex flex-col items-end">
                 <div className="flex items-baseline gap-2">
                     <span
                         className="text-6xl font-black text-yellow-400 italic tracking-tighter drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]"
@@ -789,47 +721,14 @@ const ComboDisplay: React.FC<{ combo: number; comboScore: number }> = React.memo
                 <div className="text-lg font-bold text-green-400 italic drop-shadow-md">
                     +{comboScore} SCORE
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }, (prev, next) => prev.combo === next.combo && prev.comboScore === next.comboScore);
 
-/** 화면 균열 효과 - 조건부 렌더링 최적화 */
-const ScreenCracks: React.FC<{ hp: number }> = React.memo(({ hp }) => {
-    const cracks = useMemo(() => {
-        const crackList = [];
-        if (hp <= 80) crackList.push({ key: 'crack-1', style: { top: '10%', left: '5%', rotate: '15deg', scale: 0.8 } });
-        if (hp <= 60) crackList.push({ key: 'crack-2', style: { bottom: '15%', right: '10%', rotate: '-20deg', scale: 1.1 } });
-        if (hp <= 40) crackList.push({ key: 'crack-3', style: { top: '40%', left: '20%', rotate: '45deg', scale: 1.3 } });
-        if (hp <= 20) crackList.push({ key: 'crack-4', style: { bottom: '40%', right: '25%', rotate: '180deg', scale: 1.5 } });
-        if (hp <= 10) crackList.push({ key: 'crack-5', style: { top: '50%', left: '50%', rotate: '-90deg', scale: 2, opacity: 0.8 } });
-        return crackList;
-    }, [hp]);
-
-    if (cracks.length === 0) return null;
-
-    return (
-        <div className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
-            <AnimatePresence>
-                {cracks.map(crack => (
-                    <ScreenCrack key={crack.key} style={crack.style} />
-                ))}
-            </AnimatePresence>
-        </div>
-    );
-}, (prev, next) => {
-    // HP가 균열 임계값을 넘지 않으면 리렌더링 방지
-    const thresholds = [80, 60, 40, 20, 10];
-    const prevCrossed = thresholds.filter(t => prev.hp <= t).length;
-    const nextCrossed = thresholds.filter(t => next.hp <= t).length;
-    return prevCrossed === nextCrossed;
-});
-
 const ScreenCrack: React.FC<{ style: React.CSSProperties }> = React.memo(({ style }) => (
-    <motion.div
-        initial={{ opacity: 0, scale: 2 }}
-        animate={{ opacity: 0.6, scale: style.scale as number }}
-        className="absolute will-change-transform"
+    <div
+        className="absolute opacity-60"
         style={{ ...style, width: '250px', height: '250px' }}
     >
         <svg viewBox="0 0 200 200" className="w-full h-full text-white/40 drop-shadow-md">
@@ -842,7 +741,7 @@ const ScreenCrack: React.FC<{ style: React.CSSProperties }> = React.memo(({ styl
             />
             <circle cx="100" cy="100" r="2" fill="currentColor" />
         </svg>
-    </motion.div>
+    </div>
 ));
 
 const CarVisual: React.FC<{ car: Car }> = React.memo(({ car }) => {
@@ -997,7 +896,7 @@ const CarVisual: React.FC<{ car: Car }> = React.memo(({ car }) => {
     return (
         <div className="relative">
             {/* 납작한 스포츠카 비율 적용 (w-[5rem] h-20) / 오토바이는 더 작게 (w-12 h-16) */}
-            <div className={`relative ${car.designType === 'MOTORCYCLE' ? 'w-12 h-16' : 'w-[5rem] h-20'} flex flex-col items-center justify-center transition-all duration-300 ${car.captured ? 'scale-90 opacity-40 blur-[0.5px]' : ''}`}>
+            <div className={`relative ${car.designType === 'MOTORCYCLE' ? 'w-12 h-16' : 'w-[5rem] h-20'} flex flex-col items-center justify-center transition-opacity duration-300 ${car.captured ? 'opacity-40 blur-[0.5px]' : ''}`}>
                 {renderCarBody()}
 
                 {/* 니트로 효과 (Nitro VFX) */}
@@ -1006,21 +905,6 @@ const CarVisual: React.FC<{ car: Car }> = React.memo(({ car }) => {
                 )}
             </div>
 
-            {/* 단속 성공/실패 태그 디자인 개선 */}
-            {car.captured && (
-                <motion.div
-                    initial={{ scale: 0, y: 10, opacity: 0 }}
-                    animate={{ scale: 1, y: -35, opacity: 1 }}
-                    className={`absolute inset-x-0 h-6 rounded-md flex items-center justify-center z-30 shadow-xl backdrop-blur-md border ${car.speed >= GAME_SETTINGS.TARGET_SPEED
-                        ? 'bg-emerald-500/90 border-emerald-400 text-black'
-                        : 'bg-rose-500/90 border-rose-400 text-white'
-                        }`}
-                >
-                    <span className="text-[9px] font-black italic tracking-tighter uppercase px-2">
-                        {car.speed >= GAME_SETTINGS.TARGET_SPEED ? 'Captured' : 'Over-Detection'}
-                    </span>
-                </motion.div>
-            )}
         </div>
     );
 }, (prev, next) => {
