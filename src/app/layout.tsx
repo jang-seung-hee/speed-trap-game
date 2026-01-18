@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,13 +15,25 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "특명! 파파라치!",
   description: "고속도로 위의 무법자를 단속하라! 긴장감 넘치는 스피드 트랩 액션 게임",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/banana_icon.svg",
+    shortcut: "/banana_icon.svg",
+    apple: "/banana_icon.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Mission! Paparazzi!",
+  },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#111827",
 };
 
 export default function RootLayout({
