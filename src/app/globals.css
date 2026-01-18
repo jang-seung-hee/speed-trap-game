@@ -28,6 +28,8 @@ body {
   align-items: center;
   height: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
+  /* 동적 뷰포트 높이 (모바일 주소창 고려) */
 }
 
 /* 게임 컨테이너를 모바일 화면 크기로 제한 */
@@ -36,6 +38,8 @@ body {
   max-width: 430px;
   /* 모바일 화면 최대 너비 */
   height: 100vh;
+  height: 100dvh;
+  /* 동적 뷰포트 높이 사용 */
   max-height: 932px;
   /* 모바일 화면 최대 높이 (iPhone 14 Pro Max 기준) */
   position: relative;

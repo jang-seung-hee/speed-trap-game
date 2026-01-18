@@ -27,40 +27,20 @@ const GameMain: React.FC = () => {
         setMounted(true);
     }, []);
 
-    const requestFullscreen = useCallback(() => {
-        if (!containerRef.current) return;
-
-        const element = containerRef.current;
-        const requestMethod =
-            element.requestFullscreen ||
-            (element as any).webkitRequestFullscreen ||
-            (element as any).mozRequestFullScreen ||
-            (element as any).msRequestFullscreen;
-
-        if (requestMethod) {
-            const promise = requestMethod.call(element);
-            if (promise && promise.then) {
-                promise.then(() => {
-                    if (screen.orientation && (screen.orientation as any).lock) {
-                        (screen.orientation as any).lock('portrait').catch((err: any) => {
-                            console.warn('Orientation lock failed:', err);
-                        });
-                    }
-                }).catch((err: any) => {
-                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
-                });
-            }
-        }
-    }, []);
-
     const startGame = useCallback((phase: number = 1) => {
-        requestFullscreen(); // 전체화면 요청
+        // 전체화면 API 대신 CSS로 화면을 꽉 채움 (카카오톡 인앱 브라우저 호환성)
+        // 모바일 브라우저의 주소창을 숨기기 위한 스크롤 트릭
+        if (typeof window !== 'undefined') {
+            window.scrollTo(0, 1);
+            setTimeout(() => window.scrollTo(0, 0), 100);
+        }
+
         setStartPhase(phase);
         setGameState('PLAYING');
         setFinalScore(0);
         setIsScoreSubmitted(false);
         setPlayerName('');
-    }, [requestFullscreen]);
+    }, []);
 
     const endGame = useCallback(async (score: number) => {
         setFinalScore(score);
