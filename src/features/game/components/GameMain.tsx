@@ -7,6 +7,7 @@ import HighScoreBoard from './HighScoreBoard';
 import ScoreSubmissionForm from './ScoreSubmissionForm';
 
 import { soundManager } from '../utils/SoundManager';
+import { scoreService } from '../services/scoreService';
 
 type GameState = 'TITLE' | 'PLAYING' | 'GAMEOVER' | 'HIGHSCORE';
 
@@ -16,6 +17,7 @@ const GameMain: React.FC = () => {
     const [startPhase, setStartPhase] = useState(1);
     const [mounted, setMounted] = useState(false);
     const [isScoreSubmitted, setIsScoreSubmitted] = useState(false);
+    const [isNewRecord, setIsNewRecord] = useState(false);
 
     // 하이드레이션 오류 방지를 위한 마운트 체크
     useEffect(() => {
@@ -29,9 +31,14 @@ const GameMain: React.FC = () => {
         setIsScoreSubmitted(false);
     }, []);
 
-    const endGame = useCallback((score: number) => {
+    const endGame = useCallback(async (score: number) => {
         setFinalScore(score);
         setGameState('GAMEOVER');
+
+        // 신기록 여부 확인
+        const topScores = await scoreService.getTopScores(5);
+        const isNewHighScore = topScores.length < 5 || score > topScores[topScores.length - 1].score;
+        setIsNewRecord(isNewHighScore);
     }, []);
 
     const goToTitle = useCallback(() => {
@@ -46,7 +53,7 @@ const GameMain: React.FC = () => {
     if (!mounted) return <div className="w-full h-screen bg-black" />;
 
     return (
-        <main className="relative w-full h-screen bg-black overflow-hidden font-sans">
+        <main className="relative w-full h-full bg-black overflow-hidden font-sans">
             {gameState === 'TITLE' && (
                 <TitleScreen onStart={startGame} onShowHighScores={showHighScores} />
             )}
@@ -93,6 +100,7 @@ const GameMain: React.FC = () => {
                                         <ScoreSubmissionForm
                                             score={finalScore}
                                             onSubmitted={() => setIsScoreSubmitted(true)}
+                                            isNewRecord={isNewRecord}
                                         />
                                     ) : (
                                         <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-xl mb-6 w-full">

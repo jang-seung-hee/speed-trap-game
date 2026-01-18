@@ -489,7 +489,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
 
     return (
         <div
-            className="relative w-full h-screen flex flex-col items-center bg-black overflow-hidden cursor-none"
+            className="relative w-full h-full flex flex-col items-center bg-black overflow-hidden cursor-none"
             onPointerMove={handlePointerMove}
             onPointerLeave={() => setIsPointerInside(false)}
         >
@@ -548,7 +548,10 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                         <div
                             key={lane}
                             className={`h-full flex-1 relative ${lane < GAME_SETTINGS.LANES - 1 ? 'border-r-2 border-dashed border-white/40' : ''}`}
-                            onPointerDown={() => capture(lane)}
+                            onPointerDown={(e) => {
+                                e.preventDefault();
+                                capture(lane);
+                            }}
                         >
                             <div className="absolute inset-0 active:bg-white/10 transition-colors" />
                         </div>

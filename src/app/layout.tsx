@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   description: "고속도로 위의 무법자를 단속하라! 긴장감 넘치는 스피드 트랩 액션 게임",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

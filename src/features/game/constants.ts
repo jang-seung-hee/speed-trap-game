@@ -163,31 +163,31 @@ export const GAME_SETTINGS = {
             spawnInterval: 800, // 차량이 유유자적하게 1.8초마다 한 대씩 등장
             spawnYThreshold: 20,
             minSpeed: 98,        // 차들의 최저 주행 속도
-            maxSpeed: 130,       // 과속 차량이 내는 최고 속도
-            overspeedProb: 0.4,  // 10대 중 2대 정도만 과속 차량 (나머진 100 이하 정속)
+            maxSpeed: 140,       // 과속 차량이 내는 최고 속도
+            overspeedProb: 0.6,  // 10대 중 2대 정도만 과속 차량 (나머진 100 이하 정속)
             description: "경고 : 차들이 더 많고 더 빠릅니다"
         },
         8: {
             scoreLimit: 20000,     // 2400점 달성 시 다음 단계
             zoneHeight: 18,
             trickProb: 0.5,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
-            nitroProb: 0.3,
+            nitroProb: 0.5,
             swerveProb: 0.0,
-            stopAndGoProb: 0,
+            stopAndGoProb: 0.1,
             motorcycleProb: 0,
             ambulanceProb: 0.1,
             spawnInterval: 800, // 생성 주기 1.5초로 단축
             spawnYThreshold: 20, // 간격이 Phase 1보다 조금 촘촘해짐
             minSpeed: 98,
-            maxSpeed: 130,
-            overspeedProb: 0.4,  // 과속 차량 비중 증가
+            maxSpeed: 150,
+            overspeedProb: 0.6,  // 과속 차량 비중 증가
             description: "경고: 혼란이 점점 가중되고 있습니다"
         },
         9: {
             scoreLimit: 25000,     // 2400점 달성 시 다음 단계
             zoneHeight: 18,
-            trickProb: 0.0,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
-            nitroProb: 0.0,
+            trickProb: 0.3,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
+            nitroProb: 0.3,
             swerveProb: 0.5,
             stopAndGoProb: 0.3,
             motorcycleProb: 0.5,
@@ -195,8 +195,8 @@ export const GAME_SETTINGS = {
             spawnInterval: 800, // 생성 주기 1.5초로 단축
             spawnYThreshold: 20, // 간격이 Phase 1보다 조금 촘촘해짐
             minSpeed: 98,
-            maxSpeed: 130,
-            overspeedProb: 0.4,  // 과속 차량 비중 증가
+            maxSpeed: 150,
+            overspeedProb: 0.6,  // 과속 차량 비중 증가
             description: "경고: 오토바이가 더 많이 등장합니다."
         },
         10: {
@@ -210,10 +210,10 @@ export const GAME_SETTINGS = {
             ambulanceProb: 0.1,
             spawnInterval: 800, // 생성 주기 1.5초로 단축
             spawnYThreshold: 20, // 간격이 Phase 1보다 조금 촘촘해짐
-            minSpeed: 98,
-            maxSpeed: 140,
-            overspeedProb: 0.5,  // 과속 차량 비중 증가
-            description: "경고: 오토바이가 더 많이 등장합니다."
+            minSpeed: 99,
+            maxSpeed: 160,
+            overspeedProb: 0.8,  // 과속 차량 비중 증가
+            description: "경고: 거의 모든 차들이 과속입니다."
         },
 
         11: {
@@ -228,8 +228,8 @@ export const GAME_SETTINGS = {
             spawnInterval: 700,  // 0.9초마다 숨 쉴 틈 없이 차량 쏟아짐
             spawnYThreshold: 20, // 앞차 꽁무니를 바로 쫓아오는 수준의 높은 밀도
             minSpeed: 99,
-            maxSpeed: 150,
-            overspeedProb: 0.6,
+            maxSpeed: 180,
+            overspeedProb: 0.7,
             description: "무한 단속: 최고의 파파라치임을 증명하세요!"
         },
     } as Record<number, PhaseConfig>

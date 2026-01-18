@@ -17,6 +17,26 @@ body {
   /* 게임 화면 외부 스크롤 방지 */
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+
+  /* PC 브라우저에서 모바일 화면 크기로 제한 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 게임 컨테이너를 모바일 화면 크기로 제한 */
+#__next {
+  width: 100%;
+  max-width: 430px;
+  /* 모바일 화면 최대 너비 */
+  height: 100vh;
+  max-height: 932px;
+  /* 모바일 화면 최대 높이 (iPhone 14 Pro Max 기준) */
+  position: relative;
+  background: var(--background);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  /* PC에서 볼 때 게임 영역 강조 */
 }
 
 @layer utilities {
