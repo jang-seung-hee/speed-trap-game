@@ -1,0 +1,40 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Traffic Sign: Background White Circle -->
+  <circle cx="256" cy="256" r="240" fill="white"/>
+  
+  <!-- Traffic Sign: Red Border (Prohibition) -->
+  <circle cx="256" cy="256" r="215" stroke="#cc0000" stroke-width="50"/>
+
+  <!-- Speeding Car Silhouette -->
+  <g transform="translate(0, 20)">
+    <!-- Motion Lines -->
+    <path d="M80 280 H40" stroke="#333" stroke-width="12" stroke-linecap="round"/>
+    <path d="M100 310 H20" stroke="#333" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- Car Body -->
+    <path d="M140 300 L180 260 L320 260 L360 300 L380 330 L130 330 Z" fill="#111"/>
+    <path d="M190 260 L220 220 L280 220 L310 260" fill="#111"/>
+    <!-- Wheels -->
+    <circle cx="180" cy="330" r="35" fill="#111"/>
+    <circle cx="340" cy="330" r="35" fill="#111"/>
+  </g>
+
+  <!-- Camera / Trap Element: Lens Aperture subtly in the background or corner? 
+       Let's put a 'Flash' effect to signify the trap firing. -->
+  <path d="M380 120 L420 60 L450 65 L430 110 Z" fill="#ffcc00" stroke="#ff9900" stroke-width="2">
+     <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="indefinite" />
+  </path>
+  <circle cx="420" cy="90" r="50" fill="white" opacity="0.6" filter="url(#blur)">
+      <animate attributeName="r" values="40;60;40" dur="0.2s" repeatCount="indefinite" />
+  </circle>
+
+  <!-- Diagonal Red Slash (Prohibition) -->
+  <line x1="116" y1="116" x2="396" y2="396" stroke="#cc0000" stroke-width="50" stroke-linecap="round"/>
+
+  <!-- Filters -->
+  <defs>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" />
+    </filter>
+  </defs>
+</svg>

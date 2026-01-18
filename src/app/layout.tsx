@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   description: "고속도로 위의 무법자를 단속하라! 긴장감 넘치는 스피드 트랩 액션 게임",
   manifest: "/manifest.json",
   icons: {
-    icon: "/banana_icon.svg",
-    shortcut: "/banana_icon.svg",
-    apple: "/banana_icon.svg",
+    icon: "/speed_trap_icon.svg",
+    shortcut: "/speed_trap_icon.svg",
+    apple: "/speed_trap_icon.svg",
   },
   appleWebApp: {
     capable: true,

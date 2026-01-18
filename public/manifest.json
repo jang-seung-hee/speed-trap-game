@@ -9,7 +9,7 @@
     "orientation": "landscape",
     "icons": [
         {
-            "src": "/banana_icon.svg",
+            "src": "/speed_trap_icon.svg",
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
