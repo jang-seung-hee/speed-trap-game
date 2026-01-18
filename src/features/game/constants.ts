@@ -190,14 +190,14 @@ export const GAME_SETTINGS = {
             nitroProb: 0.3,
             swerveProb: 0.5,
             stopAndGoProb: 0.3,
-            motorcycleProb: 0.5,
+            motorcycleProb: 0.3,
             ambulanceProb: 0.1,
             spawnInterval: 800, // 생성 주기 1.5초로 단축
             spawnYThreshold: 20, // 간격이 Phase 1보다 조금 촘촘해짐
             minSpeed: 98,
             maxSpeed: 150,
             overspeedProb: 0.6,  // 과속 차량 비중 증가
-            description: "경고: 오토바이가 더 많이 등장합니다."
+            description: "경고: 오토바이가 또 등장 했습니다"
         },
         10: {
             scoreLimit: 30000,     // 2400점 달성 시 다음 단계
@@ -223,7 +223,7 @@ export const GAME_SETTINGS = {
             nitroProb: 0.5,
             swerveProb: 0.5,
             stopAndGoProb: 0.5,
-            motorcycleProb: 0.5,
+            motorcycleProb: 0.2,
             ambulanceProb: 0.05,
             spawnInterval: 700,  // 0.9초마다 숨 쉴 틈 없이 차량 쏟아짐
             spawnYThreshold: 20, // 앞차 꽁무니를 바로 쫓아오는 수준의 높은 밀도
