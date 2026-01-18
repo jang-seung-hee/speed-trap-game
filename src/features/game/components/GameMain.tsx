@@ -38,9 +38,18 @@ const GameMain: React.FC = () => {
             (element as any).msRequestFullscreen;
 
         if (requestMethod) {
-            requestMethod.call(element).catch((err: any) => {
-                console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
-            });
+            const promise = requestMethod.call(element);
+            if (promise && promise.then) {
+                promise.then(() => {
+                    if (screen.orientation && (screen.orientation as any).lock) {
+                        (screen.orientation as any).lock('portrait').catch((err: any) => {
+                            console.warn('Orientation lock failed:', err);
+                        });
+                    }
+                }).catch((err: any) => {
+                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            }
         }
     }, []);
 

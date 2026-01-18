@@ -90,7 +90,7 @@ export const GAME_SETTINGS = {
             description: "주의: 갑자기 속도를 줄이는 차량이 나타납니다."
         },
         3: {
-            scoreLimit: 2000,
+            scoreLimit: 1500,
             zoneHeight: 22,
             trickProb: 0.0,
             nitroProb: 0.0,
@@ -110,7 +110,7 @@ export const GAME_SETTINGS = {
             description: "위험: 차선을 변경하며 단속을 회피합니다."
         },
         4: {
-            scoreLimit: 2000,
+            scoreLimit: 1500,
             zoneHeight: 25,
             trickProb: 0.0,
             nitroProb: 0.3,      // 가속해서 도망가는 차들이 더 자주 등장
@@ -126,7 +126,7 @@ export const GAME_SETTINGS = {
             description: "경고: 급가속하는 차량이 있습니다."
         },
         5: {
-            scoreLimit: 2000,
+            scoreLimit: 1500,
             zoneHeight: 20,
             trickProb: 0,
             nitroProb: 0,
@@ -142,7 +142,7 @@ export const GAME_SETTINGS = {
             description: "주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다."
         },
         6: {
-            scoreLimit: 2000,
+            scoreLimit: 1500,
             zoneHeight: 20,
             trickProb: 0,
             nitroProb: 0,
