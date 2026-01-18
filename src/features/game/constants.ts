@@ -6,7 +6,7 @@
 export type CarType = 'NORMAL' | 'TRICK' | 'NITRO' | 'SWERVE' | 'STOP_AND_GO' | 'AMBULANCE';
 
 export interface PhaseConfig {
-    scoreLimit: number;      // 다음 단계로 넘어가기 위한 점수 (누적 점수 기준)
+    scoreLimit: number;      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
     zoneHeight: number;       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
     trickProb: number;        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
     nitroProb: number;        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
@@ -43,9 +43,9 @@ export const GAME_SETTINGS = {
         AMBULANCE_SPEED: 200,
         /** 자동차 행동 트리거 임계값 (%) - 노란선으로부터의 거리 */
         ACTION_TRIGGER_OFFSETS: {
-            TRICK: 6,        // 브레이크 시작 위치 (기존 12 -> 5로 단축)
-            SWERVE: 6,       // 차선 변경 시작 위치 (기존 12 -> 4로 단축)
-            MOTORCYCLE: 12,  // 오토바이는 기존의 여유 있는 타이밍 유지
+            TRICK: 5,        // 브레이크 시작 위치 (기존 12 -> 5로 단축)
+            SWERVE: 5,       // 차선 변경 시작 위치 (기존 12 -> 4로 단축)
+            MOTORCYCLE: 10,  // 오토바이는 기존의 여유 있는 타이밍 유지
         }
     },
 
@@ -74,7 +74,7 @@ export const GAME_SETTINGS = {
             description: "기초 단속: 100km/h 초과 차량을 촬영하세요."
         },
         2: {
-            scoreLimit: 4000,     // 600점 달성 시 다음 단계
+            scoreLimit: 1000,     // 600점 달성 시 다음 단계
             zoneHeight: 22,
             trickProb: 0.3,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
             nitroProb: 0,
@@ -90,7 +90,7 @@ export const GAME_SETTINGS = {
             description: "주의: 갑자기 속도를 줄이는 차량이 나타납니다."
         },
         3: {
-            scoreLimit: 6000,
+            scoreLimit: 2000,
             zoneHeight: 22,
             trickProb: 0.0,
             nitroProb: 0.0,
@@ -110,7 +110,7 @@ export const GAME_SETTINGS = {
             description: "위험: 차선을 변경하며 단속을 회피합니다."
         },
         4: {
-            scoreLimit: 8000,
+            scoreLimit: 2000,
             zoneHeight: 25,
             trickProb: 0.0,
             nitroProb: 0.3,      // 가속해서 도망가는 차들이 더 자주 등장
@@ -126,7 +126,7 @@ export const GAME_SETTINGS = {
             description: "경고: 급가속하는 차량이 있습니다."
         },
         5: {
-            scoreLimit: 10000,
+            scoreLimit: 2000,
             zoneHeight: 20,
             trickProb: 0,
             nitroProb: 0,
@@ -142,7 +142,7 @@ export const GAME_SETTINGS = {
             description: "주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다."
         },
         6: {
-            scoreLimit: 12000,
+            scoreLimit: 2000,
             zoneHeight: 20,
             trickProb: 0,
             nitroProb: 0,
@@ -158,7 +158,7 @@ export const GAME_SETTINGS = {
             description: "경고: 작고 빠른 오토바이 부대가 출현했습니다."
         },
         7: {
-            scoreLimit: 15000,    // 
+            scoreLimit: 2500,    // 
             zoneHeight: 18,      // 단속 구역이 가장 넓어 촬영하기 쉬움
             trickProb: 0,        // 브레이크 차량 없음
             nitroProb: 0,        // 가속 차량 없음
@@ -174,7 +174,7 @@ export const GAME_SETTINGS = {
             description: "경고 : 차들이 더 많고 더 빠릅니다"
         },
         8: {
-            scoreLimit: 20000,     // 2400점 달성 시 다음 단계
+            scoreLimit: 2500,     // 2400점 달성 시 다음 단계
             zoneHeight: 18,
             trickProb: 0.5,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
             nitroProb: 0.5,
@@ -190,7 +190,7 @@ export const GAME_SETTINGS = {
             description: "경고: 혼란이 점점 가중되고 있습니다"
         },
         9: {
-            scoreLimit: 25000,     // 2400점 달성 시 다음 단계
+            scoreLimit: 2500,     // 2400점 달성 시 다음 단계
             zoneHeight: 18,
             trickProb: 0.3,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
             nitroProb: 0.3,
@@ -206,7 +206,7 @@ export const GAME_SETTINGS = {
             description: "경고: 오토바이가 또 등장 했습니다"
         },
         10: {
-            scoreLimit: 30000,     // 2400점 달성 시 다음 단계
+            scoreLimit: 2500,     // 2400점 달성 시 다음 단계
             zoneHeight: 18,
             trickProb: 0.2,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
             nitroProb: 0.2,

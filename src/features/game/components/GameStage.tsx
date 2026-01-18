@@ -60,6 +60,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     const [comboScore, setComboScore] = useState(0);
 
     const isAmbulanceSpawnedInPhase = useRef(false);
+    const scoreAtPhaseStart = useRef(0);
 
     // --- Effects & Logic ---
     useEffect(() => {
@@ -324,14 +325,18 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
         // Phase check
         const currentConfig = GAME_SETTINGS.PHASES[phase];
         const totalCurrentScore = scoreRef.current + comboScore;
+        const phaseProgress = totalCurrentScore - scoreAtPhaseStart.current;
 
-        if (totalCurrentScore >= currentConfig.scoreLimit && GAME_SETTINGS.PHASES[phase + 1]) {
+        if (phaseProgress >= currentConfig.scoreLimit && GAME_SETTINGS.PHASES[phase + 1]) {
             // Apply remaining combo score before level up
             if (comboScore > 0) {
                 setScore(prev => prev + comboScore);
                 setComboScore(0);
                 setCombo(0);
             }
+
+            // 중요: 페이즈 전환 후 기준 점수 업데이트
+            scoreAtPhaseStart.current = totalCurrentScore + comboScore;
 
             setIsTransitioning(true);
             soundManager.playLevelUp();
