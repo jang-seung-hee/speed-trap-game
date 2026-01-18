@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 export default function PWARegistry() {
     useEffect(() => {
-        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        if ('serviceWorker' in navigator) {
             navigator.serviceWorker
                 .register('/sw.js')
                 .then((registration) => {
