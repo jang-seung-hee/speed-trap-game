@@ -35,6 +35,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     const [isTransitioning, setIsTransitioning] = useState(true); // 처음 시작 시 브리핑 표시
     const [countdown, setCountdown] = useState<number | null>(null);
     const [isPointerInside, setIsPointerInside] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
 
     const cursorRef = useRef<HTMLDivElement>(null);
     const gameLoopRef = useRef<number | null>(null);
@@ -188,7 +189,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     const capture = (lane: number) => {
         // 클릭 디바운싱: 50ms 이내 중복 클릭 방지
         const now = performance.now();
-        if (now - lastClickTime.current < 50) {
+        if (isPaused || now - lastClickTime.current < 50) {
             return;
         }
         lastClickTime.current = now;
@@ -307,8 +308,8 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
     };
 
     const update = useCallback((time: number) => {
-        if (isTransitioning) {
-            lastFrameTime.current = time; // 트랜지션 중에도 시간 업데이트
+        if (isPaused || isTransitioning) {
+            lastFrameTime.current = time; // 일시정지 중에도 시간 업데이트하여 재개 시 점프 방지
             gameLoopRef.current = requestAnimationFrame(update);
             return;
         }
@@ -446,7 +447,7 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
         });
 
         gameLoopRef.current = requestAnimationFrame(update);
-    }, [phase, spawnCar, isTransitioning, comboScore, maxHp, flushCombo]);
+    }, [phase, spawnCar, isTransitioning, comboScore, maxHp, flushCombo, isPaused]);
 
     const startPhaseAction = () => {
         setCountdown(3);
@@ -715,19 +716,66 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
             {/* Combo Monitor (Bottom Right) - 최적화됨 */}
             <ComboDisplay combo={combo} comboScore={comboScore} />
 
-            {/* Debug/Abandon */}
-            <div className="absolute bottom-4 z-50 flex items-center gap-4">
+            {/* Bottom Left Buttons: BGM Toggle & Abandon */}
+            <div className="absolute bottom-4 left-4 z-50 flex items-center gap-3">
                 <GameBGMToggle />
                 <button
                     onClick={() => {
                         soundManager.playClick();
                         onBackToTitle();
                     }}
-                    className="text-[10px] text-white/20 italic hover:text-white/50 underline tracking-tighter"
+                    className="text-[10px] text-white/20 italic hover:text-white/40 hover:underline tracking-tighter ml-1"
                 >
                     ABANDON MISSION
                 </button>
             </div>
+
+            {/* Pause Button (Bottom Right) */}
+            <div className="absolute bottom-4 right-4 z-50">
+                <button
+                    onClick={() => {
+                        soundManager.playClick();
+                        setIsPaused(!isPaused);
+                    }}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-md border ${isPaused
+                        ? 'bg-yellow-400 border-yellow-300 text-black shadow-[0_0_20px_rgba(234,179,8,0.5)]'
+                        : 'bg-black/40 border-white/20 text-white/60 hover:text-white hover:border-white/40'
+                        }`}
+                >
+                    {isPaused ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                    )}
+                </button>
+            </div>
+
+            {/* Pause Overlay */}
+            <AnimatePresence>
+                {isPaused && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[150] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm"
+                        onClick={() => setIsPaused(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.8 }}
+                            className="bg-black/60 border border-white/10 p-8 rounded-3xl flex flex-col items-center gap-4"
+                        >
+                            <div className="text-4xl font-black text-white italic tracking-tighter">PAUSED</div>
+                            <div className="text-sm text-white/50 animate-pulse">TAP TO RESUME</div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -751,14 +799,21 @@ const GameBGMToggle: React.FC = () => {
     return (
         <button
             onClick={handleToggle}
-            className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all backdrop-blur-sm ${isBGMOn
-                ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
-                : 'bg-gray-700/20 border-gray-600/30 text-gray-400'
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-md border ${isBGMOn
+                    ? 'bg-blue-500/20 border-blue-400/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+                    : 'bg-black/40 border-white/10 text-white/40 hover:text-white/60'
                 }`}
         >
-            <span className="flex items-center gap-1">
-                <span>{isBGMOn ? '🔊' : '🔇'}</span>
-                <span>BGM</span>
+            <span className="text-xl">
+                {isBGMOn ? (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                ) : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                    </svg>
+                )}
             </span>
         </button>
     );

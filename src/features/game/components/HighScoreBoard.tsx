@@ -42,9 +42,9 @@ const HighScoreBoard: React.FC<HighScoreBoardProps> = ({ currentScore, variant =
     };
 
     return (
-        <div className={`w-full bg-black/40 backdrop-blur-md border border-white/10 overflow-hidden transition-all ${isFull ? 'max-w-3xl rounded-3xl p-6 md:p-8' : 'max-w-md rounded-xl p-4'
+        <div className={`w-full bg-black/40 backdrop-blur-md border border-white/10 overflow-hidden transition-all ${isFull ? 'max-w-2xl rounded-3xl p-5 md:p-6' : 'max-w-md rounded-xl p-4'
             }`}>
-            <div className={`flex items-center justify-between ${isFull ? 'mb-8' : 'mb-3'}`}>
+            <div className={`flex items-center justify-between ${isFull ? 'mb-5' : 'mb-3'}`}>
                 <h3 className={`${isFull ? 'text-3xl md:text-4xl' : 'text-sm'} font-black text-white italic tracking-widest uppercase`}>
                     Elite Drivers
                 </h3>
@@ -60,7 +60,7 @@ const HighScoreBoard: React.FC<HighScoreBoardProps> = ({ currentScore, variant =
                         }`} />
                 </div>
             ) : (
-                <div className={isFull ? 'space-y-3' : 'space-y-1.5'}>
+                <div className={isFull ? 'space-y-2' : 'space-y-1.5'}>
                     {scores.length === 0 ? (
                         <p className={`text-center text-white/30 ${isFull ? 'text-lg py-10' : 'text-xs py-2'}`}>No records yet.</p>
                     ) : (
@@ -70,15 +70,15 @@ const HighScoreBoard: React.FC<HighScoreBoardProps> = ({ currentScore, variant =
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 key={record.id || index}
-                                className={`flex items-center justify-between transition-all ${isFull ? 'p-4 rounded-xl' : 'p-2 rounded'
+                                className={`flex items-center justify-between transition-all ${isFull ? 'p-2.5 px-4 rounded-xl' : 'p-2 rounded'
                                     } ${index === 0 ? 'bg-yellow-400/20 border border-yellow-400/50' :
                                         index === 1 ? 'bg-white/10 border border-white/20' :
                                             index === 2 ? 'bg-orange-500/10 border border-orange-500/30' :
                                                 'bg-white/5 border border-white/5'
                                     }`}
                             >
-                                <div className={`flex items-center ${isFull ? 'gap-6' : 'gap-3'}`}>
-                                    <span className={`font-black italic text-center ${isFull ? 'text-2xl w-10' : 'text-sm w-4'
+                                <div className="flex items-center gap-4 flex-1 overflow-hidden">
+                                    <span className={`font-black italic text-left ${isFull ? 'text-2xl w-8' : 'text-sm w-4'
                                         } ${index === 0 ? 'text-yellow-400' :
                                             index === 1 ? 'text-gray-300' :
                                                 index === 2 ? 'text-orange-400' :
@@ -86,18 +86,18 @@ const HighScoreBoard: React.FC<HighScoreBoardProps> = ({ currentScore, variant =
                                         }`}>
                                         {index + 1}
                                     </span>
-                                    <div className="flex flex-col">
-                                        <span className={`${isFull ? 'text-xl md:text-2xl max-w-[300px] md:max-w-[400px]' : 'text-xs max-w-[200px]'
+                                    <div className="flex flex-col text-left min-w-0">
+                                        <span className={`${isFull ? 'text-lg md:text-xl' : 'text-xs'
                                             } font-bold text-white uppercase tracking-wider truncate`}>
                                             {record.name}
                                         </span>
-                                        <span className={`${isFull ? 'text-sm mt-1' : 'text-[9px]'
+                                        <span className={`${isFull ? 'text-xs mt-0.5' : 'text-[9px]'
                                             } text-white/30 leading-none`}>
                                             {formatDate(record.date)}
                                         </span>
                                     </div>
                                 </div>
-                                <div className={`${isFull ? 'text-2xl md:text-3xl' : 'text-sm'} font-black italic text-right`}>
+                                <div className={`${isFull ? 'text-xl md:text-2xl ml-4' : 'text-sm ml-2'} font-black italic text-right shrink-0`}>
                                     <span className="text-white">{record.score.toLocaleString()}</span>
                                 </div>
                             </motion.div>
