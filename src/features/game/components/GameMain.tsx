@@ -18,18 +18,37 @@ const GameMain: React.FC = () => {
     const [mounted, setMounted] = useState(false);
     const [isScoreSubmitted, setIsScoreSubmitted] = useState(false);
     const [isNewRecord, setIsNewRecord] = useState(false);
+    const containerRef = React.useRef<HTMLElement>(null);
 
     // 하이드레이션 오류 방지를 위한 마운트 체크
     useEffect(() => {
         setMounted(true);
     }, []);
 
+    const requestFullscreen = useCallback(() => {
+        if (!containerRef.current) return;
+
+        const element = containerRef.current;
+        const requestMethod =
+            element.requestFullscreen ||
+            (element as any).webkitRequestFullscreen ||
+            (element as any).mozRequestFullScreen ||
+            (element as any).msRequestFullscreen;
+
+        if (requestMethod) {
+            requestMethod.call(element).catch((err: any) => {
+                console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        }
+    }, []);
+
     const startGame = useCallback((phase: number = 1) => {
+        requestFullscreen(); // 전체화면 요청
         setStartPhase(phase);
         setGameState('PLAYING');
         setFinalScore(0);
         setIsScoreSubmitted(false);
-    }, []);
+    }, [requestFullscreen]);
 
     const endGame = useCallback(async (score: number) => {
         setFinalScore(score);
@@ -37,7 +56,7 @@ const GameMain: React.FC = () => {
 
         // 신기록 여부 확인
         const topScores = await scoreService.getTopScores(5);
-        const isNewHighScore = topScores.length < 5 || score > topScores[topScores.length - 1].score;
+        const isNewHighScore = topScores.length < 5 || score > (topScores[topScores.length - 1]?.score || 0);
         setIsNewRecord(isNewHighScore);
     }, []);
 
@@ -53,7 +72,7 @@ const GameMain: React.FC = () => {
     if (!mounted) return <div className="w-full h-screen bg-black" />;
 
     return (
-        <main className="relative w-full h-full bg-black overflow-hidden font-sans">
+        <main ref={containerRef as any} className="relative w-full h-full bg-black overflow-hidden font-sans">
             {gameState === 'TITLE' && (
                 <TitleScreen onStart={startGame} onShowHighScores={showHighScores} />
             )}
