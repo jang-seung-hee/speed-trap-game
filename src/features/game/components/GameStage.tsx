@@ -379,18 +379,28 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
                 let nextActionDone = car.actionDone;
                 let stoppedAt = car.stoppedAt;
 
-                if (!car.actionDone && car.y > zoneTop - 12) {
-                    if (car.type === 'TRICK') nextSpeed = 92;
-                    else if (car.type === 'NITRO') nextSpeed = 138;
-                    else if (car.type === 'SWERVE') {
-                        const possibleLanes = [];
-                        if (car.lane > 0) possibleLanes.push(car.lane - 1);
-                        if (car.lane < GAME_SETTINGS.LANES - 1) possibleLanes.push(car.lane + 1);
-                        if (possibleLanes.length > 0) {
-                            nextLane = possibleLanes[Math.floor(Math.random() * possibleLanes.length)];
-                        }
+                if (!car.actionDone) {
+                    // 행동 시작 임계값 결정
+                    let triggerOffset = GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.TRICK;
+                    if (car.type === 'SWERVE') {
+                        triggerOffset = car.designType === 'MOTORCYCLE'
+                            ? GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.MOTORCYCLE
+                            : GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.SWERVE;
                     }
-                    nextActionDone = true;
+
+                    if (car.y > zoneTop - triggerOffset) {
+                        if (car.type === 'TRICK') nextSpeed = 92;
+                        else if (car.type === 'NITRO') nextSpeed = 138;
+                        else if (car.type === 'SWERVE') {
+                            const possibleLanes = [];
+                            if (car.lane > 0) possibleLanes.push(car.lane - 1);
+                            if (car.lane < GAME_SETTINGS.LANES - 1) possibleLanes.push(car.lane + 1);
+                            if (possibleLanes.length > 0) {
+                                nextLane = possibleLanes[Math.floor(Math.random() * possibleLanes.length)];
+                            }
+                        }
+                        nextActionDone = true;
+                    }
                 }
 
                 if (car.type === 'STOP_AND_GO' && !car.captured) {

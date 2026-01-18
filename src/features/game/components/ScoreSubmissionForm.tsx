@@ -4,7 +4,7 @@ import { scoreService } from '../services/scoreService';
 
 interface ScoreSubmissionFormProps {
     score: number;
-    onSubmitted: () => void;
+    onSubmitted: (name: string) => void;
     isNewRecord?: boolean;
 }
 
@@ -23,7 +23,7 @@ const ScoreSubmissionForm: React.FC<ScoreSubmissionFormProps> = ({ score, onSubm
         const success = await scoreService.addScore(name, score);
 
         if (success) {
-            onSubmitted();
+            onSubmitted(name);
         } else {
             setError('Failed to submit score. Try again.');
             setSubmitting(false);
@@ -31,13 +31,13 @@ const ScoreSubmissionForm: React.FC<ScoreSubmissionFormProps> = ({ score, onSubm
     };
 
     const handleSkip = () => {
-        onSubmitted();
+        onSubmitted('');
     };
 
     return (
         <div className={`w-full max-w-md rounded-2xl p-4 border mb-4 backdrop-blur-sm ${isNewRecord
-                ? 'bg-yellow-500/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                : 'bg-white/5 border-white/10'
+            ? 'bg-yellow-500/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+            : 'bg-white/5 border-white/10'
             }`}>
             {isNewRecord && (
                 <div className="mb-3 p-2 bg-yellow-400/20 border border-yellow-400/40 rounded-xl">
@@ -61,8 +61,8 @@ const ScoreSubmissionForm: React.FC<ScoreSubmissionFormProps> = ({ score, onSubm
                         placeholder={isNewRecord ? "이름을 입력하세요 (필수)" : "ENTER CODENAME"}
                         maxLength={20}
                         className={`w-full bg-black/50 border rounded-xl px-3 py-2 text-center text-white font-bold tracking-widest uppercase focus:outline-none transition-all placeholder:text-white/20 text-sm ${isNewRecord
-                                ? 'border-yellow-400/50 focus:border-yellow-400 focus:shadow-[0_0_20px_rgba(250,204,21,0.4)]'
-                                : 'border-white/20 focus:border-yellow-400 focus:shadow-[0_0_15px_rgba(250,204,21,0.3)]'
+                            ? 'border-yellow-400/50 focus:border-yellow-400 focus:shadow-[0_0_20px_rgba(250,204,21,0.4)]'
+                            : 'border-white/20 focus:border-yellow-400 focus:shadow-[0_0_15px_rgba(250,204,21,0.3)]'
                             }`}
                         disabled={submitting}
                     />

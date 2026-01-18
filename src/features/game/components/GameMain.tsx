@@ -8,6 +8,7 @@ import ScoreSubmissionForm from './ScoreSubmissionForm';
 
 import { soundManager } from '../utils/SoundManager';
 import { scoreService } from '../services/scoreService';
+import ShareResultButton from './ShareResultButton';
 
 type GameState = 'TITLE' | 'PLAYING' | 'GAMEOVER' | 'HIGHSCORE';
 
@@ -18,6 +19,7 @@ const GameMain: React.FC = () => {
     const [mounted, setMounted] = useState(false);
     const [isScoreSubmitted, setIsScoreSubmitted] = useState(false);
     const [isNewRecord, setIsNewRecord] = useState(false);
+    const [playerName, setPlayerName] = useState('');
     const containerRef = React.useRef<HTMLElement>(null);
 
     // 하이드레이션 오류 방지를 위한 마운트 체크
@@ -48,6 +50,7 @@ const GameMain: React.FC = () => {
         setGameState('PLAYING');
         setFinalScore(0);
         setIsScoreSubmitted(false);
+        setPlayerName('');
     }, [requestFullscreen]);
 
     const endGame = useCallback(async (score: number) => {
@@ -82,7 +85,7 @@ const GameMain: React.FC = () => {
             )}
 
             {gameState === 'GAMEOVER' && (
-                <div className="relative flex flex-col items-center justify-center h-full text-white bg-gray-900 z-50 p-6 text-center overflow-y-auto">
+                <div className="relative flex flex-col items-center h-full text-white bg-gray-900 z-50 p-6 text-center overflow-y-auto custom-scrollbar">
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0">
                         <img
@@ -93,10 +96,10 @@ const GameMain: React.FC = () => {
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
                     </div>
 
-                    <div className="relative z-10 w-full h-full flex flex-col items-center justify-center py-10">
-                        <div className="w-full max-w-md">
+                    <div className="relative z-10 w-full flex flex-col items-center justify-start py-4 min-h-full">
+                        <div className="w-full max-w-md mt-4">
                             <MotionDivPlaceholder>
-                                <div className="relative inline-block mb-2 mt-10">
+                                <div className="relative inline-block mb-2 mt-4">
                                     {/* Dark smoke/shadow effect for readability */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[200%] bg-black/80 blur-2xl -z-10 rounded-full" />
 
@@ -118,7 +121,10 @@ const GameMain: React.FC = () => {
                                     {!isScoreSubmitted ? (
                                         <ScoreSubmissionForm
                                             score={finalScore}
-                                            onSubmitted={() => setIsScoreSubmitted(true)}
+                                            onSubmitted={(name) => {
+                                                setIsScoreSubmitted(true);
+                                                setPlayerName(name);
+                                            }}
                                             isNewRecord={isNewRecord}
                                         />
                                     ) : (
@@ -127,7 +133,14 @@ const GameMain: React.FC = () => {
                                         </div>
                                     )}
 
-                                    <HighScoreBoard currentScore={finalScore} />
+                                    {/* Share Button 추가 */}
+                                    <div className="w-full mb-6">
+                                        <ShareResultButton
+                                            score={finalScore}
+                                            phase={startPhase}
+                                            name={playerName}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col w-full gap-3 mb-10">
@@ -136,6 +149,13 @@ const GameMain: React.FC = () => {
                                         className="w-full px-10 py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                                     >
                                         RETRY MISSION
+                                    </button>
+
+                                    <button
+                                        onClick={showHighScores}
+                                        className="w-full px-10 py-4 bg-blue-600/20 text-blue-400 font-bold rounded-xl border border-blue-500/30 hover:bg-blue-500/30 transition-all backdrop-blur-sm shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+                                    >
+                                        VIEW HALL OF FAME
                                     </button>
 
                                     <button
@@ -163,10 +183,10 @@ const GameMain: React.FC = () => {
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
                     </div>
 
-                    <div className="relative z-10 w-full h-full flex flex-col items-center justify-center overflow-y-auto custom-scrollbar">
-                        <div className="w-full max-w-4xl py-10">
+                    <div className="relative z-10 w-full flex flex-col items-center justify-start overflow-y-auto custom-scrollbar min-h-full py-4">
+                        <div className="w-full max-w-4xl mt-4">
                             <MotionDivPlaceholder>
-                                <div className="relative inline-block mb-8">
+                                <div className="relative inline-block mb-6">
                                     {/* Dark smoke/shadow effect for readability */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[200%] bg-black/80 blur-2xl -z-10 rounded-full" />
 

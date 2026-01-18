@@ -41,6 +41,12 @@ export const GAME_SETTINGS = {
          */
         SPAWN_Y_THRESHOLD: 30,
         AMBULANCE_SPEED: 200,
+        /** 자동차 행동 트리거 임계값 (%) - 노란선으로부터의 거리 */
+        ACTION_TRIGGER_OFFSETS: {
+            TRICK: 6,        // 브레이크 시작 위치 (기존 12 -> 5로 단축)
+            SWERVE: 6,       // 차선 변경 시작 위치 (기존 12 -> 4로 단축)
+            MOTORCYCLE: 12,  // 오토바이는 기존의 여유 있는 타이밍 유지
+        }
     },
 
     /** 스테이지(PHASE)별 상세 난이도 설정 */
@@ -69,7 +75,7 @@ export const GAME_SETTINGS = {
         },
         2: {
             scoreLimit: 4000,     // 600점 달성 시 다음 단계
-            zoneHeight: 20,
+            zoneHeight: 22,
             trickProb: 0.3,      // 20% 확률로 얄밉게 브레이크를 밟는 차 등장
             nitroProb: 0,
             swerveProb: 0,
