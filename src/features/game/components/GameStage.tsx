@@ -716,17 +716,23 @@ const GameStage: React.FC<GameStageProps> = ({ onGameOver, onBackToTitle, initia
             {/* Combo Monitor (Bottom Right) - 최적화됨 */}
             <ComboDisplay combo={combo} comboScore={comboScore} />
 
-            {/* Bottom Left Buttons: BGM Toggle & Abandon */}
-            <div className="absolute bottom-4 left-4 z-50 flex items-center gap-3">
+            {/* Bottom Left Button: BGM Toggle */}
+            <div className="absolute bottom-4 left-4 z-50">
                 <GameBGMToggle />
+            </div>
+
+            {/* Bottom Center Button: Return to Main */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
                 <button
                     onClick={() => {
                         soundManager.playClick();
-                        onBackToTitle();
+                        if (window.confirm("경기를 포기하고 메인 화면으로 돌아가시겠습니까?")) {
+                            onBackToTitle();
+                        }
                     }}
-                    className="text-[10px] text-white/20 italic hover:text-white/40 hover:underline tracking-tighter ml-1"
+                    className="px-3 py-1 bg-black/40 border border-white/10 rounded-full text-[9px] font-bold text-white/20 hover:text-white/60 hover:bg-white/5 transition-all backdrop-blur-sm uppercase tracking-tight italic"
                 >
-                    ABANDON MISSION
+                    Return to Main
                 </button>
             </div>
 
@@ -800,8 +806,8 @@ const GameBGMToggle: React.FC = () => {
         <button
             onClick={handleToggle}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-md border ${isBGMOn
-                    ? 'bg-blue-500/20 border-blue-400/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                    : 'bg-black/40 border-white/10 text-white/40 hover:text-white/60'
+                ? 'bg-blue-500/20 border-blue-400/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+                : 'bg-black/40 border-white/10 text-white/40 hover:text-white/60'
                 }`}
         >
             <span className="text-xl">
