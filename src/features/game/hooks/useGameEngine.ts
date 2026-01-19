@@ -477,6 +477,15 @@ export const useGameEngine = ({
     const applyReward = useCallback((effect: RewardEffect) => {
         soundManager.playPowerUp();
 
+        // 보상 효과 발동 시 4초간 슬로우 모션 (효과 확인용)
+        setTimeScale(0.1);
+        setTimeout(() => {
+            // SLOW_TIME 효과가 아닌 경우에만 원래 속도로 복구
+            if (effect !== 'SLOW_TIME') {
+                setTimeScale(1);
+            }
+        }, 4000);
+
         switch (effect) {
             case 'HEAL_50':
                 setHp(prev => Math.min(prev + maxHp * 0.5, maxHp));
