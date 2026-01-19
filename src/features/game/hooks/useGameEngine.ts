@@ -109,8 +109,8 @@ export const useGameEngine = ({
     const spawnCar = useCallback(() => {
         const config = settings.PHASES[phase] || settings.PHASES[5];
 
-        // 도로 정비 효과 시 2칸으로 제한
-        const maxLanes = roadNarrowActive ? 2 : settings.LANES;
+        // 도로 정비 효과 시 2칸으로 제한, 그렇지 않으면 스테이지별 lanes 사용
+        const maxLanes = roadNarrowActive ? 2 : config.lanes;
         const allLanes = Array.from({ length: maxLanes }, (_, i) => i);
 
         const availableLanes = allLanes.filter(l => {
@@ -534,12 +534,15 @@ export const useGameEngine = ({
                 setMessage({ text: "고성능 카메라!", color: '#ffa502' });
                 break;
             case 'SLOW_TIME':
-                setTimeScale(0.5); // 속도를 절반으로 감소 (느려짐)
-                setMessage({ text: "슬로우! (60초)", color: '#a55eea' });
+                // 4초 후부터 60초간 슬로우 적용
                 setTimeout(() => {
-                    setTimeScale(1);
-                    setMessage({ text: "속도 복구", color: '#a55eea' });
-                }, 60000);
+                    setTimeScale(0.5);
+                    setMessage({ text: "슬로우! (60초)", color: '#a55eea' });
+                    setTimeout(() => {
+                        setTimeScale(1);
+                        setMessage({ text: "속도 복구", color: '#a55eea' });
+                    }, 60000);
+                }, 4000);
                 break;
         }
 
