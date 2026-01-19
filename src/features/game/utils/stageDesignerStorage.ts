@@ -97,8 +97,11 @@ export const exportSettingsAsCode = (settings: CustomGameSettings): string => {
     const phasesCode = Object.entries(settings.PHASES)
         .map(([phaseNum, config]) => {
             return `        ${phaseNum}: {
+        ${phaseNum}: {
             scoreLimit: ${config.scoreLimit},
             zoneHeight: ${config.zoneHeight},
+            lanes: ${config.lanes},
+            speedCoefficient: ${config.speedCoefficient},
             trickProb: ${config.trickProb},
             nitroProb: ${config.nitroProb},
             swerveProb: ${config.swerveProb},
@@ -110,6 +113,7 @@ export const exportSettingsAsCode = (settings: CustomGameSettings): string => {
             minSpeed: ${config.minSpeed},
             maxSpeed: ${config.maxSpeed},
             overspeedProb: ${config.overspeedProb},
+            rewardProbs: ${JSON.stringify(config.rewardProbs, null, 4).replace(/"/g, '').replace(/\n/g, '\n            ')},
             description: "${config.description}"
         }`;
         })
