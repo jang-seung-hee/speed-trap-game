@@ -96,25 +96,36 @@ export const getCurrentSettings = (): CustomGameSettings => {
 export const exportSettingsAsCode = (settings: CustomGameSettings): string => {
     const phasesCode = Object.entries(settings.PHASES)
         .map(([phaseNum, config]) => {
+            const num = Number(phaseNum);
+            const defaultPhase = GAME_SETTINGS.PHASES[num] || GAME_SETTINGS.PHASES[1];
+
+            const rewardProbs = config.rewardProbs || defaultPhase.rewardProbs || {
+                HEAL_50: 0.15, HEAL_100: 0.10, SHIELD: 0.15, BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15, ROAD_NARROW: 0.10, CAMERA_BOOST: 0.20, SLOW_TIME: 0.10
+            };
+
+            const rewardProbsStr = JSON.stringify(rewardProbs, null, 4)
+                .replace(/"/g, '')
+                .replace(/\n/g, '\n            ');
+
             return `        ${phaseNum}: {
-        ${phaseNum}: {
-            scoreLimit: ${config.scoreLimit},
-            zoneHeight: ${config.zoneHeight},
-            lanes: ${config.lanes},
-            speedCoefficient: ${config.speedCoefficient},
-            trickProb: ${config.trickProb},
-            nitroProb: ${config.nitroProb},
-            swerveProb: ${config.swerveProb},
-            stopAndGoProb: ${config.stopAndGoProb},
-            motorcycleProb: ${config.motorcycleProb},
-            ambulanceProb: ${config.ambulanceProb},
-            spawnInterval: ${config.spawnInterval},
-            spawnYThreshold: ${config.spawnYThreshold},
-            minSpeed: ${config.minSpeed},
-            maxSpeed: ${config.maxSpeed},
-            overspeedProb: ${config.overspeedProb},
-            rewardProbs: ${JSON.stringify(config.rewardProbs, null, 4).replace(/"/g, '').replace(/\n/g, '\n            ')},
-            description: "${config.description}"
+            scoreLimit: ${config.scoreLimit ?? defaultPhase.scoreLimit},
+            zoneHeight: ${config.zoneHeight ?? defaultPhase.zoneHeight},
+            lanes: ${config.lanes ?? defaultPhase.lanes},
+            speedCoefficient: ${config.speedCoefficient ?? defaultPhase.speedCoefficient},
+            trickProb: ${config.trickProb ?? defaultPhase.trickProb},
+            nitroProb: ${config.nitroProb ?? defaultPhase.nitroProb},
+            swerveProb: ${config.swerveProb ?? defaultPhase.swerveProb},
+            stopAndGoProb: ${config.stopAndGoProb ?? defaultPhase.stopAndGoProb},
+            motorcycleProb: ${config.motorcycleProb ?? defaultPhase.motorcycleProb},
+            ambulanceProb: ${config.ambulanceProb ?? defaultPhase.ambulanceProb},
+            spawnInterval: ${config.spawnInterval ?? defaultPhase.spawnInterval},
+            spawnYThreshold: ${config.spawnYThreshold ?? defaultPhase.spawnYThreshold},
+            minSpeed: ${config.minSpeed ?? defaultPhase.minSpeed},
+            maxSpeed: ${config.maxSpeed ?? defaultPhase.maxSpeed},
+            overspeedProb: ${config.overspeedProb ?? defaultPhase.overspeedProb},
+            rewardProbs: ${rewardProbsStr},
+            description: "${config.description || defaultPhase.description}"
         }`;
         })
         .join(',\n');
@@ -127,19 +138,19 @@ export const exportSettingsAsCode = (settings: CustomGameSettings): string => {
 
 export const GAME_SETTINGS = {
     /** 기본 규칙 설정 */
-    TARGET_SPEED: ${settings.TARGET_SPEED},
-    LANES: ${settings.LANES},
-    ZONE_BOTTOM_FIXED: ${settings.ZONE_BOTTOM_FIXED},
+    TARGET_SPEED: ${settings.TARGET_SPEED ?? GAME_SETTINGS.TARGET_SPEED},
+    LANES: ${settings.LANES ?? GAME_SETTINGS.LANES},
+    ZONE_BOTTOM_FIXED: ${settings.ZONE_BOTTOM_FIXED ?? GAME_SETTINGS.ZONE_BOTTOM_FIXED},
 
     /** 물리 및 시스템 설정 */
     PHYSICS: {
-        SPEED_COEFFICIENT: ${settings.PHYSICS.SPEED_COEFFICIENT},
-        SPAWN_Y_THRESHOLD: ${settings.PHYSICS.SPAWN_Y_THRESHOLD},
-        AMBULANCE_SPEED: ${settings.PHYSICS.AMBULANCE_SPEED},
+        SPEED_COEFFICIENT: ${settings.PHYSICS?.SPEED_COEFFICIENT ?? GAME_SETTINGS.PHYSICS.SPEED_COEFFICIENT},
+        SPAWN_Y_THRESHOLD: ${settings.PHYSICS?.SPAWN_Y_THRESHOLD ?? GAME_SETTINGS.PHYSICS.SPAWN_Y_THRESHOLD},
+        AMBULANCE_SPEED: ${settings.PHYSICS?.AMBULANCE_SPEED ?? GAME_SETTINGS.PHYSICS.AMBULANCE_SPEED},
         ACTION_TRIGGER_OFFSETS: {
-            TRICK: ${settings.PHYSICS.ACTION_TRIGGER_OFFSETS.TRICK},
-            SWERVE: ${settings.PHYSICS.ACTION_TRIGGER_OFFSETS.SWERVE},
-            MOTORCYCLE: ${settings.PHYSICS.ACTION_TRIGGER_OFFSETS.MOTORCYCLE},
+            TRICK: ${settings.PHYSICS?.ACTION_TRIGGER_OFFSETS?.TRICK ?? GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.TRICK},
+            SWERVE: ${settings.PHYSICS?.ACTION_TRIGGER_OFFSETS?.SWERVE ?? GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.SWERVE},
+            MOTORCYCLE: ${settings.PHYSICS?.ACTION_TRIGGER_OFFSETS?.MOTORCYCLE ?? GAME_SETTINGS.PHYSICS.ACTION_TRIGGER_OFFSETS.MOTORCYCLE},
         }
     },
 
@@ -155,14 +166,19 @@ ${phasesCode}
  * 설정을 파일로 다운로드
  */
 export const downloadSettingsAsFile = (settings: CustomGameSettings): void => {
-    const code = exportSettingsAsCode(settings);
-    const blob = new Blob([code], { type: 'text/typescript' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `game-settings-${new Date().toISOString().slice(0, 10)}.ts`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+        const code = exportSettingsAsCode(settings);
+        const blob = new Blob([code], { type: 'text/typescript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game-settings-${new Date().toISOString().slice(0, 10)}.ts`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export settings:', error);
+        alert('설정 내보내기 중 오류가 발생했습니다.\\n' + error);
+    }
 };
