@@ -5,6 +5,7 @@ import TitleScreen from './TitleScreen';
 import GameStage from './GameStage';
 import HighScoreBoard from './HighScoreBoard';
 import ScoreSubmissionForm from './ScoreSubmissionForm';
+import { StageDesigner } from './StageDesigner';
 
 import { soundManager } from '../utils/SoundManager';
 import { scoreService } from '../services/scoreService';
@@ -21,10 +22,17 @@ const GameMain: React.FC = () => {
     const [isNewRecord, setIsNewRecord] = useState(false);
     const [playerName, setPlayerName] = useState('');
     const containerRef = React.useRef<HTMLElement>(null);
+    const [isDevMode, setIsDevMode] = useState(false);
 
     // 하이드레이션 오류 방지를 위한 마운트 체크
     useEffect(() => {
         setMounted(true);
+        // localhost 감지 (개발 모드)
+        if (typeof window !== 'undefined') {
+            const isLocalhost = window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1';
+            setIsDevMode(isLocalhost);
+        }
     }, []);
 
     const startGame = useCallback((phase: number = 1) => {
@@ -62,6 +70,11 @@ const GameMain: React.FC = () => {
     }, []);
 
     if (!mounted) return <div className="w-full h-screen bg-black" />;
+
+    // 개발 모드 (localhost)에서는 StageDesigner 표시
+    if (isDevMode) {
+        return <StageDesigner />;
+    }
 
     return (
         <main ref={containerRef as any} className="relative w-full h-full bg-black overflow-hidden font-sans">
