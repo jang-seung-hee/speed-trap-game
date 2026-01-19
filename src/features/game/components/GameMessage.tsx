@@ -11,8 +11,18 @@ export const GameMessage: React.FC<GameMessageProps> = ({ message }) => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
             <div
                 key={message.text}
-                className="text-6xl font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-game-message"
-                style={{ color: message.color }}
+                className="text-5xl font-black italic tracking-tight px-8 py-4 rounded-xl"
+                style={{
+                    color: message.color,
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    border: `3px solid ${message.color}`,
+                    textShadow: `0 0 20px ${message.color}, 0 0 40px ${message.color}, 2px 2px 4px rgba(0,0,0,0.8)`,
+                    boxShadow: `0 0 30px ${message.color}`,
+                    whiteSpace: 'nowrap',
+                    maxWidth: '90vw',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}
             >
                 {message.text}
             </div>
