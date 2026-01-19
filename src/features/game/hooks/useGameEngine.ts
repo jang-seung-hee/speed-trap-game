@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { GAME_SETTINGS, type CarType, type PhaseConfig } from '../constants';
+import { GAME_SETTINGS, type CarType, type PhaseConfig, type RewardEffect } from '../constants';
 import { soundManager } from '../utils/SoundManager';
 import { Car } from '../types';
 import { CustomGameSettings } from '../utils/stageDesignerStorage';
@@ -55,6 +55,9 @@ export const useGameEngine = ({
     const [shield, setShield] = useState(0);
     const [timeScale, setTimeScale] = useState(1);
     const [zoneModifier, setZoneModifier] = useState(0);
+    const [roadNarrowActive, setRoadNarrowActive] = useState(false);
+    const [roadNarrowEndTime, setRoadNarrowEndTime] = useState(0);
+    const [cameraBoostActive, setCameraBoostActive] = useState(false);
 
     // Initial Audio Setup
     useEffect(() => {
@@ -105,7 +108,11 @@ export const useGameEngine = ({
 
     const spawnCar = useCallback(() => {
         const config = settings.PHASES[phase] || settings.PHASES[5];
-        const allLanes = Array.from({ length: settings.LANES }, (_, i) => i);
+
+        // 도로 정비 효과 시 2칸으로 제한
+        const maxLanes = roadNarrowActive ? 2 : settings.LANES;
+        const allLanes = Array.from({ length: maxLanes }, (_, i) => i);
+
         const availableLanes = allLanes.filter(l => {
             const lastY = lastLaneSpawnY.current[l];
             return lastY > config.spawnYThreshold;
@@ -467,56 +474,84 @@ export const useGameEngine = ({
         }, 1000);
     }, []);
 
-    const applyReward = useCallback((effect: { type: string, value: number, duration?: number }) => {
-        switch (effect.type) {
-            case 'HEAL':
-                setHp(prev => Math.min(maxHp, prev + (maxHp * (effect.value / 100))));
-                setMessage({ text: `HEAL +${effect.value}%`, color: '#2ed573' });
+    const applyReward = useCallback((effect: RewardEffect) => {
+        soundManager.playPowerUp();
+
+        switch (effect) {
+            case 'HEAL_50':
+                setHp(prev => Math.min(prev + maxHp * 0.5, maxHp));
+                setMessage({ text: "체력 50% 회복!", color: '#2ecc71' });
+                break;
+            case 'HEAL_100':
+                setHp(maxHp);
+                setMessage({ text: "체력 완전 회복!", color: '#27ae60' });
                 break;
             case 'SHIELD':
-                setShield(prev => prev + effect.value);
-                setMessage({ text: `SHIELD +${effect.value}`, color: '#00d2d3' });
+                setShield(prev => prev + 3);
+                setMessage({ text: "쉴드 +3!", color: '#00d2d3' });
                 break;
-            case 'SCORE':
-                setScore(prev => prev + effect.value);
-                setMessage({ text: `BONUS +${effect.value}`, color: '#f1c40f' });
-                break;
-            case 'NUKE':
+            case 'BOMB_ALL':
                 setCars(currentCars => {
                     const visibleCars = currentCars.filter(c => c.y > -20 && c.y < 120 && !c.captured);
                     if (visibleCars.length === 0) return currentCars;
 
-                    const scoreGain = visibleCars.length * effect.value;
+                    const scoreGain = visibleCars.length * 200;
                     setScore(prev => prev + scoreGain);
-                    setMessage({ text: `NUKE! +${scoreGain}`, color: '#ff4757' });
-                    soundManager.playPowerUp(); // Use as explosion temporary sound
+                    setMessage({ text: `올킬! +${scoreGain}점`, color: '#ff4757' });
 
                     return currentCars.filter(c => !(c.y > -20 && c.y < 120 && !c.captured));
                 });
                 break;
-            case 'TIME_SLOW':
-                // Slow down by reducing speed to 20% (0.2x) as per request
-                setTimeScale(0.2);
-                setMessage({ text: "TIME SLOW!", color: '#a55eea' });
-                if (effect.duration) {
-                    setTimeout(() => {
-                        setTimeScale(1);
-                        setMessage({ text: "TIME RESUME", color: '#a55eea' });
-                    }, effect.duration || 5000);
-                }
+            case 'BOMB_HALF':
+                setCars(currentCars => {
+                    const visibleCars = currentCars.filter(c => c.y > -20 && c.y < 120 && !c.captured);
+                    if (visibleCars.length === 0) return currentCars;
+
+                    const halfCount = Math.ceil(visibleCars.length / 2);
+                    const toRemove = visibleCars.slice(0, halfCount);
+                    const scoreGain = halfCount * 200;
+                    setScore(prev => prev + scoreGain);
+                    setMessage({ text: `하프킬! +${scoreGain}점`, color: '#ff6348' });
+
+                    const removeIds = new Set(toRemove.map(c => c.id));
+                    return currentCars.filter(c => !removeIds.has(c.id));
+                });
                 break;
-            case 'ZONE_EXPAND':
-                setZoneModifier(effect.value); // Add value % (e.g., 20)
-                setMessage({ text: "ZONE EXPAND!", color: '#ffa502' });
-                if (effect.duration) {
-                    setTimeout(() => {
-                        setZoneModifier(0);
-                        setMessage({ text: "ZONE RESET", color: '#ffa502' });
-                    }, effect.duration || 10000);
-                }
+            case 'ROAD_NARROW':
+                setRoadNarrowActive(true);
+                setRoadNarrowEndTime(Date.now() + 60000);
+                setMessage({ text: "도로 정비! (60초)", color: '#f39c12' });
+                // 2칸 밖의 차량 제거
+                setCars(currentCars => currentCars.filter(c => c.lane < 2));
+                setTimeout(() => {
+                    setRoadNarrowActive(false);
+                    setMessage({ text: "도로 복구", color: '#f39c12' });
+                }, 60000);
+                break;
+            case 'CAMERA_BOOST':
+                setCameraBoostActive(true);
+                setZoneModifier(40);
+                setMessage({ text: "고성능 카메라!", color: '#ffa502' });
+                break;
+            case 'SLOW_TIME':
+                setTimeScale(0.5); // 속도를 절반으로 감소 (느려짐)
+                setMessage({ text: "슬로우! (60초)", color: '#a55eea' });
+                setTimeout(() => {
+                    setTimeScale(1);
+                    setMessage({ text: "속도 복구", color: '#a55eea' });
+                }, 60000);
                 break;
         }
-    }, [maxHp]);
+
+        // 콤보 리셋
+        if (comboScore > 0) {
+            setScore(prev => prev + comboScore);
+        }
+        setCombo(0);
+        setComboScore(0);
+
+        setTimeout(() => setMessage(null), 2000);
+    }, [maxHp, comboScore]);
 
     // Exposed functionality
     return {
@@ -536,6 +571,7 @@ export const useGameEngine = ({
         shield,
         timeScale,
         zoneModifier,
+        roadNarrowActive,
 
         // Settings (커스텀 또는 기본)
         settings,

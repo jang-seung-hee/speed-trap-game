@@ -5,6 +5,19 @@
 
 export type CarType = 'NORMAL' | 'TRICK' | 'NITRO' | 'SWERVE' | 'STOP_AND_GO' | 'AMBULANCE';
 
+/**
+ * 콤보 보상 효과 타입
+ */
+export type RewardEffect =
+    | 'HEAL_50'      // 체력 50% 회복
+    | 'HEAL_100'     // 체력 100% 회복
+    | 'SHIELD'       // 쉴드 +3
+    | 'BOMB_ALL'     // 올킬 (모든 차량 제거)
+    | 'BOMB_HALF'    // 하프킬 (절반 차량 제거)
+    | 'ROAD_NARROW'  // 도로 정비 (60초간 2칸)
+    | 'CAMERA_BOOST' // 고성능 카메라 (단속 구역 40%)
+    | 'SLOW_TIME';   // 슬로우 (60초간 속도 계수 250)
+
 export interface PhaseConfig {
     scoreLimit: number;      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
     zoneHeight: number;       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
@@ -22,6 +35,17 @@ export interface PhaseConfig {
     maxSpeed: number;         // 주행 최대 속도 (km/h)
     overspeedProb: number;    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
     description: string;      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+    // 콤보 보상 확률 (각 효과별 확률, 합이 1.0이 되도록 설정)
+    rewardProbs: {
+        HEAL_50: number;
+        HEAL_100: number;
+        SHIELD: number;
+        BOMB_ALL: number;
+        BOMB_HALF: number;
+        ROAD_NARROW: number;
+        CAMERA_BOOST: number;
+        SLOW_TIME: number;
+    };
 }
 
 export const GAME_SETTINGS = {
@@ -69,7 +93,17 @@ export const GAME_SETTINGS = {
             minSpeed: 88,
             maxSpeed: 110,
             overspeedProb: 0.6,
-            description: "기초 단속: 100km/h 초과 차량을 촬영하세요."
+            description: "기초 단속: 100km/h 초과 차량을 촬영하세요.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         2: {
             scoreLimit: 1000,
@@ -87,7 +121,17 @@ export const GAME_SETTINGS = {
             minSpeed: 92,
             maxSpeed: 125,
             overspeedProb: 0.6,
-            description: "주의: 갑자기 속도를 줄이는 차량이 나타납니다."
+            description: "주의: 갑자기 속도를 줄이는 차량이 나타납니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         3: {
             scoreLimit: 1500,
@@ -105,7 +149,17 @@ export const GAME_SETTINGS = {
             minSpeed: 88,
             maxSpeed: 115,
             overspeedProb: 0.6,
-            description: "위험: 차선을 변경하며 단속을 회피합니다."
+            description: "위험: 차선을 변경하며 단속을 회피합니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         4: {
             scoreLimit: 1500,
@@ -123,7 +177,17 @@ export const GAME_SETTINGS = {
             minSpeed: 88,
             maxSpeed: 115,
             overspeedProb: 0.6,
-            description: "경고: 급가속하는 차량이 있습니다."
+            description: "경고: 급가속하는 차량이 있습니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         5: {
             scoreLimit: 1500,
@@ -141,7 +205,17 @@ export const GAME_SETTINGS = {
             minSpeed: 88,
             maxSpeed: 120,
             overspeedProb: 0.6,
-            description: "주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다."
+            description: "주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         6: {
             scoreLimit: 1500,
@@ -159,7 +233,17 @@ export const GAME_SETTINGS = {
             minSpeed: 95,
             maxSpeed: 130,
             overspeedProb: 0.6,
-            description: "경고: 작고 빠른 오토바이 부대가 출현했습니다."
+            description: "경고: 작고 빠른 오토바이 부대가 출현했습니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         7: {
             scoreLimit: 2500,
@@ -177,7 +261,17 @@ export const GAME_SETTINGS = {
             minSpeed: 98,
             maxSpeed: 140,
             overspeedProb: 0.6,
-            description: "경고 : 차들이 더 많고 더 빠릅니다"
+            description: "경고 : 차들이 더 많고 더 빠릅니다",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         8: {
             scoreLimit: 2500,
@@ -195,7 +289,17 @@ export const GAME_SETTINGS = {
             minSpeed: 98,
             maxSpeed: 150,
             overspeedProb: 0.6,
-            description: "경고: 혼란이 점점 가중되고 있습니다"
+            description: "경고: 혼란이 점점 가중되고 있습니다",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         9: {
             scoreLimit: 2500,
@@ -213,7 +317,17 @@ export const GAME_SETTINGS = {
             minSpeed: 98,
             maxSpeed: 150,
             overspeedProb: 0.6,
-            description: "경고: 오토바이가 또 등장 했습니다"
+            description: "경고: 오토바이가 또 등장 했습니다",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
         10: {
             scoreLimit: 2500,
@@ -231,7 +345,17 @@ export const GAME_SETTINGS = {
             minSpeed: 99,
             maxSpeed: 160,
             overspeedProb: 0.8,
-            description: "경고: 거의 모든 차들이 과속입니다."
+            description: "경고: 거의 모든 차들이 과속입니다.",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
 
         11: {
@@ -250,7 +374,17 @@ export const GAME_SETTINGS = {
             minSpeed: 99,
             maxSpeed: 180,
             overspeedProb: 0.7,
-            description: "무한 단속: 최고의 파파라치임을 증명하세요!"
+            description: "무한 단속: 최고의 파파라치임을 증명하세요!",
+            rewardProbs: {
+                HEAL_50: 0.15,
+                HEAL_100: 0.10,
+                SHIELD: 0.15,
+                BOMB_ALL: 0.05,
+                BOMB_HALF: 0.15,
+                ROAD_NARROW: 0.10,
+                CAMERA_BOOST: 0.20,
+                SLOW_TIME: 0.10
+            }
         },
     } as Record<number, PhaseConfig>
 };

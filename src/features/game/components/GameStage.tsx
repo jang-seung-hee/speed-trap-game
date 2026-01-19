@@ -53,6 +53,7 @@ const GameStage: React.FC<GameStageProps> = ({
         combo,
         comboScore,
         shield,
+        roadNarrowActive,
         // Modifiers
         zoneModifier,
         // Settings
@@ -69,7 +70,13 @@ const GameStage: React.FC<GameStageProps> = ({
         customSettings
     });
 
-    const { availableReward, claimReward } = useComboRewards({ combo });
+    // 현재 페이즈 설정 가져오기
+    const currentPhaseConfig = settings.PHASES[phase] || settings.PHASES[1];
+
+    const { availableReward, claimReward } = useComboRewards({
+        combo,
+        phaseConfig: currentPhaseConfig
+    });
 
     const cursorRef = useRef<HTMLDivElement>(null);
     const [isPointerInside, setIsPointerInside] = useState(false);
@@ -81,9 +88,6 @@ const GameStage: React.FC<GameStageProps> = ({
             cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
         }
     };
-
-    // 현재 페이즈 설정 가져오기
-    const currentPhaseConfig = settings.PHASES[phase] || settings.PHASES[1];
 
     return (
         <div
@@ -118,7 +122,7 @@ const GameStage: React.FC<GameStageProps> = ({
                 onCapture={capture}
                 zoneModifier={zoneModifier}
                 zoneHeight={currentPhaseConfig.zoneHeight}
-                lanes={settings.LANES}
+                lanes={roadNarrowActive ? 2 : currentPhaseConfig.lanes}
                 zoneBottomFixed={settings.ZONE_BOTTOM_FIXED}
             />
 

@@ -22,8 +22,23 @@ export const StageEditor: React.FC<StageEditorProps> = ({
     onSave,
     onReset
 }) => {
-    const updateConfig = (key: keyof PhaseConfig, value: number | string) => {
-        onChange({ ...config, [key]: value });
+    // rewardProbs가 없을 경우 기본값 제공
+    const safeConfig = {
+        ...config,
+        rewardProbs: config.rewardProbs || {
+            HEAL_50: 0.15,
+            HEAL_100: 0.10,
+            SHIELD: 0.15,
+            BOMB_ALL: 0.05,
+            BOMB_HALF: 0.15,
+            ROAD_NARROW: 0.10,
+            CAMERA_BOOST: 0.20,
+            SLOW_TIME: 0.10
+        }
+    };
+
+    const updateConfig = (key: keyof PhaseConfig, value: number | string | object) => {
+        onChange({ ...safeConfig, [key]: value });
     };
 
     return (
@@ -46,7 +61,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="목표 점수"
-                        value={config.scoreLimit}
+                        value={safeConfig.scoreLimit}
                         min={0}
                         max={10000}
                         step={100}
@@ -57,7 +72,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="단속 구역 높이"
-                        value={config.zoneHeight}
+                        value={safeConfig.zoneHeight}
                         min={0}
                         max={40}
                         step={1}
@@ -68,7 +83,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="도로 라인 수"
-                        value={config.lanes}
+                        value={safeConfig.lanes}
                         min={0}
                         max={7}
                         step={1}
@@ -79,7 +94,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="주행 속도 계수"
-                        value={config.speedCoefficient}
+                        value={safeConfig.speedCoefficient}
                         min={0}
                         max={500}
                         step={10}
@@ -93,7 +108,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="급브레이크 확률"
-                        value={config.trickProb}
+                        value={safeConfig.trickProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -103,7 +118,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="급가속 확률"
-                        value={config.nitroProb}
+                        value={safeConfig.nitroProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -113,7 +128,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="차선 변경 확률"
-                        value={config.swerveProb}
+                        value={safeConfig.swerveProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -123,7 +138,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="정지 후 출발 확률"
-                        value={config.stopAndGoProb}
+                        value={safeConfig.stopAndGoProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -137,7 +152,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="오토바이 확률"
-                        value={config.motorcycleProb}
+                        value={safeConfig.motorcycleProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -147,7 +162,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="앰뷸런스 확률"
-                        value={config.ambulanceProb}
+                        value={safeConfig.ambulanceProb}
                         min={0}
                         max={0.3}
                         step={0.01}
@@ -161,7 +176,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="스폰 간격"
-                        value={config.spawnInterval}
+                        value={safeConfig.spawnInterval}
                         min={0}
                         max={3000}
                         step={100}
@@ -172,7 +187,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="스폰 Y 임계값"
-                        value={config.spawnYThreshold}
+                        value={safeConfig.spawnYThreshold}
                         min={0}
                         max={80}
                         step={5}
@@ -187,7 +202,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="최소 속도"
-                        value={config.minSpeed}
+                        value={safeConfig.minSpeed}
                         min={0}
                         max={120}
                         step={1}
@@ -198,7 +213,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="최대 속도"
-                        value={config.maxSpeed}
+                        value={safeConfig.maxSpeed}
                         min={0}
                         max={200}
                         step={5}
@@ -209,7 +224,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                     <SliderControl
                         label="과속 확률"
-                        value={config.overspeedProb}
+                        value={safeConfig.overspeedProb}
                         min={0}
                         max={1}
                         step={0.05}
@@ -219,10 +234,94 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                 </div>
 
                 <div className="settings-section">
+                    <h4 className="section-title">콤보 보상 확률</h4>
+
+                    <SliderControl
+                        label="체력 50% 회복"
+                        value={safeConfig.rewardProbs.HEAL_50}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, HEAL_50: v })}
+                        description="체력 50% 회복 확률"
+                    />
+
+                    <SliderControl
+                        label="체력 100% 회복"
+                        value={safeConfig.rewardProbs.HEAL_100}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, HEAL_100: v })}
+                        description="체력 완전 회복 확률"
+                    />
+
+                    <SliderControl
+                        label="쉴드 +3"
+                        value={safeConfig.rewardProbs.SHIELD}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, SHIELD: v })}
+                        description="쉴드 3개 획득 확률"
+                    />
+
+                    <SliderControl
+                        label="올킬 폭탄"
+                        value={safeConfig.rewardProbs.BOMB_ALL}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, BOMB_ALL: v })}
+                        description="모든 차량 제거 확률"
+                    />
+
+                    <SliderControl
+                        label="하프킬 폭탄"
+                        value={safeConfig.rewardProbs.BOMB_HALF}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, BOMB_HALF: v })}
+                        description="절반 차량 제거 확률"
+                    />
+
+                    <SliderControl
+                        label="도로 정비"
+                        value={safeConfig.rewardProbs.ROAD_NARROW}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, ROAD_NARROW: v })}
+                        description="60초간 도로 2칸 축소 확률"
+                    />
+
+                    <SliderControl
+                        label="고성능 카메라"
+                        value={safeConfig.rewardProbs.CAMERA_BOOST}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, CAMERA_BOOST: v })}
+                        description="단속 구역 40% 확대 확률"
+                    />
+
+                    <SliderControl
+                        label="슬로우"
+                        value={safeConfig.rewardProbs.SLOW_TIME}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, SLOW_TIME: v })}
+                        description="60초간 속도 감소 확률"
+                    />
+                </div>
+
+                <div className="settings-section">
                     <h4 className="section-title">미션 설명</h4>
                     <textarea
                         className="description-input"
-                        value={config.description}
+                        value={safeConfig.description}
                         onChange={(e) => updateConfig('description', e.target.value)}
                         placeholder="스테이지 시작 시 표시될 미션 설명"
                         rows={2}
