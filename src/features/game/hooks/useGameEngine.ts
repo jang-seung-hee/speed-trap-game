@@ -404,7 +404,7 @@ export const useGameEngine = ({
                     }
                 }
 
-                const speedPerSecond = (nextSpeed / settings.PHYSICS.SPEED_COEFFICIENT) * 60;
+                const speedPerSecond = (nextSpeed / currentConfig.speedCoefficient) * 60;
                 // Apply Time Scale to Speed
                 const fallingSpeed = speedPerSecond * deltaTime * timeScale;
                 const nextY = car.y + fallingSpeed;

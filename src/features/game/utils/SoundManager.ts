@@ -11,6 +11,10 @@ export class SoundManager {
 
     constructor() {
         if (typeof window !== 'undefined') {
+            // 음소거 상태를 sessionStorage에서 복원 (탭 닫으면 리셋)
+            const savedMuteState = sessionStorage.getItem('gameMuted');
+            this.isMuted = savedMuteState === 'true';
+
             const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
             if (AudioContextClass) {
                 this.ctx = new AudioContextClass();
@@ -20,6 +24,7 @@ export class SoundManager {
             // BGM 초기화
             this.bgmAudio = new Audio();
             this.bgmAudio.volume = 0.5;
+            this.bgmAudio.muted = this.isMuted; // 초기 음소거 상태 적용
 
             // 한 곡이 끝나면 자동으로 다음 곡(랜덤) 재생
             this.bgmAudio.addEventListener('ended', () => {
@@ -235,7 +240,7 @@ export class SoundManager {
     }
 
     public playBGM() {
-        if (this.bgmAudio) {
+        if (this.bgmAudio && !this.isMuted) {
             this.bgmAudio.muted = this.isMuted;
             // 재생 중이 아닐 때만 재생 시작 (처음 시작 or 재개)
             if (this.bgmAudio.paused) {
@@ -268,9 +273,23 @@ export class SoundManager {
 
     public toggleMute() {
         this.isMuted = !this.isMuted;
+
+        // sessionStorage에 저장 (탭 닫으면 리셋)
+        sessionStorage.setItem('gameMuted', String(this.isMuted));
+
         if (this.bgmAudio) {
             this.bgmAudio.muted = this.isMuted;
+
+            // 음소거 해제 시 BGM이 일시정지 상태면 재생
+            if (!this.isMuted && this.bgmAudio.paused) {
+                this.playBGM();
+            }
+            // 음소거 시 BGM 일시정지
+            else if (this.isMuted && !this.bgmAudio.paused) {
+                this.bgmAudio.pause();
+            }
         }
+
         return this.isMuted;
     }
 
