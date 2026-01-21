@@ -8,9 +8,10 @@ interface GameHUDProps {
     comboScore: number;
     phase: number;
     shield?: number;
+    doubleScoreActive?: boolean;
 }
 
-export const GameHUD: React.FC<GameHUDProps> = ({ hp, maxHp, score, comboScore, phase, shield = 0 }) => {
+export const GameHUD: React.FC<GameHUDProps> = ({ hp, maxHp, score, comboScore, phase, shield = 0, doubleScoreActive = false }) => {
     return (
         <div className="absolute top-0 w-full z-50 p-6 flex justify-between items-start pointer-events-none">
             <div className="flex flex-col gap-1">
@@ -42,10 +43,20 @@ export const GameHUD: React.FC<GameHUDProps> = ({ hp, maxHp, score, comboScore, 
 
             <div className="flex flex-col items-center">
                 <span className="text-[10px] font-black text-white/50 tracking-widest uppercase italic">Score</span>
-                <div className="flex flex-col items-center">
+                <div className="flex items-center gap-2">
                     <div className="text-4xl font-black text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.5)] italic tracking-tighter">
-                        {(score + comboScore).toLocaleString().padStart(6, '0')}
+                        {(score + comboScore).toString().padStart(6, '0')}
                     </div>
+                    {/* Double Score Indicator */}
+                    {doubleScoreActive && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-500/20 border-2 border-yellow-400/50 shadow-[0_0_15px_rgba(250,204,21,0.5)]"
+                        >
+                            <span className="text-yellow-400 font-black text-lg italic">×2</span>
+                        </motion.div>
+                    )}
                 </div>
             </div>
 

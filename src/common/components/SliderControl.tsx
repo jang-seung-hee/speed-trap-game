@@ -43,7 +43,7 @@ export const SliderControl: React.FC<SliderControlProps> = ({
                 min={min}
                 max={max}
                 step={step}
-                value={value}
+                value={value ?? 0}
                 onChange={handleChange}
                 className="slider-input"
             />
@@ -54,15 +54,15 @@ export const SliderControl: React.FC<SliderControlProps> = ({
 
             <style jsx>{`
                 .slider-control {
-                    margin-bottom: 8px;
-                    padding: 6px 0;
+                    margin-bottom: 4px;
+                    padding: 2px 0;
                 }
 
                 .slider-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 4px;
+                    margin-bottom: 2px;
                 }
 
                 .slider-label {

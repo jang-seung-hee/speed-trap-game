@@ -36,7 +36,7 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) 
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full h-screen overflow-hidden bg-gray-900 text-white">
+    <div className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden bg-gray-900 text-white">
       {/* BGM 토글 버튼 - 좌하단 */}
       <div className="absolute bottom-6 left-6 z-30">
         <BGMToggleButton />
@@ -164,8 +164,8 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) 
         </motion.button>
       </div>
 
-      {/* 푸터 문구 */}
-      <div className="absolute bottom-8 z-20 text-gray-500 text-sm font-mono">
+      {/* 데스크탑 전용: 프레임 외부 하단 푸터 */}
+      <div className="hidden md:block absolute bottom-8 z-20 text-gray-500 text-sm font-mono">
         © 2026 SPEED TRAP PROJECT
       </div>
     </div>

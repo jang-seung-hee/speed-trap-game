@@ -82,6 +82,16 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                         onChange={(v) => updateSetting('PHYSICS.AMBULANCE_SPEED', v)}
                         description="앰뷸런스의 주행 속도"
                     />
+
+                    <SliderControl
+                        label="경찰차 속도"
+                        value={(settings.PHYSICS as any).POLICE_SPEED || 220}
+                        min={0}
+                        max={300}
+                        step={10}
+                        onChange={(v) => updateSetting('PHYSICS.POLICE_SPEED', v)}
+                        description="경찰차의 주행 속도"
+                    />
                 </div>
 
                 <div className="settings-group">
@@ -128,9 +138,13 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                 }
 
                 .settings-group {
-                    margin-bottom: 16px;
-                    padding-bottom: 12px;
+                    margin-bottom: 12px;
+                    padding-bottom: 8px;
                     border-bottom: 1px solid #eee;
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px 16px;
+                    align-items: start;
                 }
 
                 .settings-group:last-child {
@@ -143,7 +157,8 @@ export const GlobalSettings: React.FC<GlobalSettingsProps> = ({
                     font-size: 13px;
                     font-weight: 600;
                     color: #555;
-                    margin: 0 0 12px 0;
+                    margin: 0 0 8px 0;
+                    grid-column: 1 / -1;
                 }
             `}</style>
         </div>

@@ -18,6 +18,7 @@ import { GameScene } from './GameScene';
 import { GameControls } from './GameControls';
 import { CustomCursor } from './CustomCursor';
 import { GameMessage } from './GameMessage';
+import { EffectTimer } from './EffectTimer';
 
 import { CustomGameSettings } from '../utils/stageDesignerStorage';
 
@@ -54,6 +55,20 @@ const GameStage: React.FC<GameStageProps> = ({
         comboScore,
         shield,
         roadNarrowActive,
+        roadNarrowEndTime,
+        roadNarrowTimerValid,
+        cameraBoostActive,
+        cameraBoostEndTime,
+        cameraBoostTimerValid,
+        slowTimeActive,
+        slowTimeEndTime,
+        slowTimeTimerValid,
+        searchlightActive,
+        doubleScoreActive,
+        doubleScoreEndTime,
+        doubleScoreTimerValid,
+        searchlightEndTime,
+        searchlightTimerValid,
         // Modifiers
         zoneModifier,
         // Settings
@@ -63,6 +78,8 @@ const GameStage: React.FC<GameStageProps> = ({
         setIsPaused,
         startPhaseAction,
         applyReward,
+        // State for UI
+        isStageClear,
     } = useGameEngine({
         onGameOver: devMode ? () => { } : onGameOver,  // 개발 모드에서는 게임 오버 무시
         initialPhase: forcePhase || initialPhase,
@@ -113,7 +130,7 @@ const GameStage: React.FC<GameStageProps> = ({
             </div>
 
             {/* HUD Layer */}
-            <GameHUD hp={hp} maxHp={maxHp} score={score} comboScore={comboScore} phase={phase} shield={shield} />
+            <GameHUD hp={hp} maxHp={maxHp} score={score} comboScore={comboScore} phase={phase} shield={shield} doubleScoreActive={doubleScoreActive} />
 
             {/* Main Game Scene */}
             <GameScene
@@ -124,6 +141,7 @@ const GameStage: React.FC<GameStageProps> = ({
                 zoneHeight={currentPhaseConfig.zoneHeight}
                 lanes={roadNarrowActive ? 2 : currentPhaseConfig.lanes}
                 zoneBottomFixed={settings.ZONE_BOTTOM_FIXED}
+                searchlightActive={searchlightActive}
             />
 
             {/* VFX: Messages */}
@@ -137,7 +155,19 @@ const GameStage: React.FC<GameStageProps> = ({
                         prevStageResult={prevStageResult}
                         countdown={countdown}
                         onStartPhase={startPhaseAction}
+                        config={currentPhaseConfig}
+                        settings={settings}
                     />
+                )}
+                {/* Stage Phase Clear Announcement Overaly */}
+                {isStageClear && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[80]">
+                        <h2
+                            className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-orange-500 drop-shadow-lg animate-bounce tracking-widest"
+                        >
+                            STAGE CLEAR!
+                        </h2>
+                    </div>
                 )}
             </AnimatePresence>
 
@@ -149,6 +179,20 @@ const GameStage: React.FC<GameStageProps> = ({
 
             {/* Combo Monitor */}
             <ComboDisplay combo={combo} comboScore={comboScore} />
+
+            {/* Effect Timer - 남은 시간 5초 이하일 때 카운트다운 표시 */}
+            <EffectTimer
+                roadNarrowEndTime={roadNarrowEndTime}
+                roadNarrowTimerValid={roadNarrowTimerValid}
+                cameraBoostEndTime={cameraBoostEndTime}
+                cameraBoostTimerValid={cameraBoostTimerValid}
+                slowTimeEndTime={slowTimeEndTime}
+                slowTimeTimerValid={slowTimeTimerValid}
+                doubleScoreEndTime={doubleScoreEndTime}
+                doubleScoreTimerValid={doubleScoreTimerValid}
+                searchlightEndTime={searchlightEndTime}
+                searchlightTimerValid={searchlightTimerValid}
+            />
 
             {/* Combo Reward Button */}
             <ComboRewardButton

@@ -3,9 +3,9 @@
  * 선택된 스테이지의 모든 파라미터를 편집
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SliderControl } from '@/common/components/SliderControl';
-import { PhaseConfig } from '@/features/game/constants';
+import { PhaseConfig, RewardEffect } from '@/features/game/constants';
 
 interface StageEditorProps {
     stageNumber: number;
@@ -15,6 +15,19 @@ interface StageEditorProps {
     onReset: () => void;
 }
 
+const DEFAULT_ACTIVE_REWARDS: RewardEffect[] = [
+    'HEAL_50',
+    'HEAL_100',
+    'SHIELD',
+    'BOMB_ALL',
+    'BOMB_HALF',
+    'ROAD_NARROW',
+    'CAMERA_BOOST',
+    'SLOW_TIME',
+    'DOUBLE_SCORE',
+    'SEARCHLIGHT'
+];
+
 export const StageEditor: React.FC<StageEditorProps> = ({
     stageNumber,
     config,
@@ -22,24 +35,43 @@ export const StageEditor: React.FC<StageEditorProps> = ({
     onSave,
     onReset
 }) => {
-    // rewardProbs가 없을 경우 기본값 제공
-    const safeConfig = {
+    // 콤보 보상 탭 상태 (10, 20, 30, 40)
+    const [activeComboTab, setActiveComboTab] = useState<number>(10);
+
+    // comboRewards가 없을 경우 기본값 제공
+    const safeConfig: PhaseConfig = {
         ...config,
-        rewardProbs: config.rewardProbs || {
-            HEAL_50: 0.15,
-            HEAL_100: 0.10,
-            SHIELD: 0.15,
-            BOMB_ALL: 0.05,
-            BOMB_HALF: 0.15,
-            ROAD_NARROW: 0.10,
-            CAMERA_BOOST: 0.20,
-            SLOW_TIME: 0.10
+        comboRewards: config.comboRewards || {
+            10: [...DEFAULT_ACTIVE_REWARDS],
+            20: [...DEFAULT_ACTIVE_REWARDS],
+            30: [...DEFAULT_ACTIVE_REWARDS],
+            40: [...DEFAULT_ACTIVE_REWARDS]
         }
     };
 
-    const updateConfig = (key: keyof PhaseConfig, value: number | string | object) => {
+    const updateConfig = (key: keyof PhaseConfig, value: any) => {
         onChange({ ...safeConfig, [key]: value });
     };
+
+    const toggleRewardEffect = (effectType: RewardEffect) => {
+        const rawEffects = safeConfig.comboRewards[activeComboTab];
+        const currentEffects = Array.isArray(rawEffects) ? rawEffects : [...DEFAULT_ACTIVE_REWARDS];
+
+        const newEffects = currentEffects.includes(effectType)
+            ? currentEffects.filter(e => e !== effectType)
+            : [...currentEffects, effectType];
+
+        const newComboRewards = {
+            ...safeConfig.comboRewards,
+            [activeComboTab]: newEffects
+        };
+
+        updateConfig('comboRewards', newComboRewards);
+    };
+
+    const currentEffects = Array.isArray(safeConfig.comboRewards[activeComboTab])
+        ? safeConfig.comboRewards[activeComboTab]
+        : DEFAULT_ACTIVE_REWARDS;
 
     return (
         <div className="stage-editor">
@@ -160,15 +192,27 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                         description="오토바이가 등장할 확률"
                     />
 
-                    <SliderControl
-                        label="앰뷸런스 확률"
-                        value={safeConfig.ambulanceProb}
-                        min={0}
-                        max={0.3}
-                        step={0.01}
-                        onChange={(v) => updateConfig('ambulanceProb', v)}
-                        description="앰뷸런스가 등장할 확률"
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                        <label className="checkbox-item" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', cursor: 'pointer' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 500 }}>앰뷸런스 등장 (1회)</span>
+                            <input
+                                type="checkbox"
+                                checked={!!safeConfig.hasAmbulance}
+                                onChange={(e) => updateConfig('hasAmbulance', e.target.checked)}
+                                style={{ transform: 'scale(1.2)' }}
+                            />
+                        </label>
+
+                        <label className="checkbox-item" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', cursor: 'pointer' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 500 }}>경찰차 등장 (1회)</span>
+                            <input
+                                type="checkbox"
+                                checked={!!safeConfig.hasPolice}
+                                onChange={(e) => updateConfig('hasPolice', e.target.checked)}
+                                style={{ transform: 'scale(1.2)' }}
+                            />
+                        </label>
+                    </div>
                 </div>
 
                 <div className="settings-section">
@@ -234,87 +278,117 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                 </div>
 
                 <div className="settings-section">
-                    <h4 className="section-title">콤보 보상 확률</h4>
+                    <h4 className="section-title">콤보 보상 설정</h4>
 
-                    <SliderControl
-                        label="체력 50% 회복"
-                        value={safeConfig.rewardProbs.HEAL_50}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, HEAL_50: v })}
-                        description="체력 50% 회복 확률"
-                    />
+                    <div className="combo-tabs">
+                        {[10, 20, 30, 40].map(combo => (
+                            <button
+                                key={combo}
+                                className={`combo-tab ${activeComboTab === combo ? 'active' : ''}`}
+                                onClick={() => setActiveComboTab(combo)}
+                            >
+                                {combo} 콤보
+                            </button>
+                        ))}
+                    </div>
 
-                    <SliderControl
-                        label="체력 100% 회복"
-                        value={safeConfig.rewardProbs.HEAL_100}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, HEAL_100: v })}
-                        description="체력 완전 회복 확률"
-                    />
+                    <div className="combo-content" style={{ gridColumn: '1 / -1' }}>
+                        <div className="combo-info">
+                            {activeComboTab} 콤보 달성 시 등장시킬 특수효과를 선택하세요
+                        </div>
 
-                    <SliderControl
-                        label="쉴드 +3"
-                        value={safeConfig.rewardProbs.SHIELD}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, SHIELD: v })}
-                        description="쉴드 3개 획득 확률"
-                    />
+                        <div className="checkbox-grid">
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('HEAL_50')}
+                                    onChange={() => toggleRewardEffect('HEAL_50')}
+                                />
+                                <span>체력 50% 회복</span>
+                            </label>
 
-                    <SliderControl
-                        label="올킬 폭탄"
-                        value={safeConfig.rewardProbs.BOMB_ALL}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, BOMB_ALL: v })}
-                        description="모든 차량 제거 확률"
-                    />
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('HEAL_100')}
+                                    onChange={() => toggleRewardEffect('HEAL_100')}
+                                />
+                                <span>체력 100% 회복</span>
+                            </label>
 
-                    <SliderControl
-                        label="하프킬 폭탄"
-                        value={safeConfig.rewardProbs.BOMB_HALF}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, BOMB_HALF: v })}
-                        description="절반 차량 제거 확률"
-                    />
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('SHIELD')}
+                                    onChange={() => toggleRewardEffect('SHIELD')}
+                                />
+                                <span>쉴드 +3</span>
+                            </label>
 
-                    <SliderControl
-                        label="도로 정비"
-                        value={safeConfig.rewardProbs.ROAD_NARROW}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, ROAD_NARROW: v })}
-                        description="60초간 도로 2칸 축소 확률"
-                    />
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('BOMB_ALL')}
+                                    onChange={() => toggleRewardEffect('BOMB_ALL')}
+                                />
+                                <span>올킬 폭탄</span>
+                            </label>
 
-                    <SliderControl
-                        label="고성능 카메라"
-                        value={safeConfig.rewardProbs.CAMERA_BOOST}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, CAMERA_BOOST: v })}
-                        description="단속 구역 40% 확대 확률"
-                    />
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('BOMB_HALF')}
+                                    onChange={() => toggleRewardEffect('BOMB_HALF')}
+                                />
+                                <span>하프킬 폭탄</span>
+                            </label>
 
-                    <SliderControl
-                        label="슬로우"
-                        value={safeConfig.rewardProbs.SLOW_TIME}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        onChange={(v) => updateConfig('rewardProbs', { ...safeConfig.rewardProbs, SLOW_TIME: v })}
-                        description="60초간 속도 감소 확률"
-                    />
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('ROAD_NARROW')}
+                                    onChange={() => toggleRewardEffect('ROAD_NARROW')}
+                                />
+                                <span>도로 정비</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('CAMERA_BOOST')}
+                                    onChange={() => toggleRewardEffect('CAMERA_BOOST')}
+                                />
+                                <span>고성능 카메라</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('SLOW_TIME')}
+                                    onChange={() => toggleRewardEffect('SLOW_TIME')}
+                                />
+                                <span>슬로우</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('DOUBLE_SCORE')}
+                                    onChange={() => toggleRewardEffect('DOUBLE_SCORE')}
+                                />
+                                <span>더블득점</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('SEARCHLIGHT')}
+                                    onChange={() => toggleRewardEffect('SEARCHLIGHT')}
+                                />
+                                <span>서치라이트</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="settings-section">
@@ -335,6 +409,9 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                     border: 1px solid #ddd;
                     border-radius: 6px;
                     overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
                 }
 
                 .editor-header {
@@ -344,6 +421,7 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    flex-shrink: 0;
                 }
 
                 .editor-header h3 {
@@ -390,14 +468,18 @@ export const StageEditor: React.FC<StageEditorProps> = ({
 
                 .editor-content {
                     padding: 16px;
-                    max-height: 600px;
                     overflow-y: auto;
+                    flex: 1;
                 }
 
                 .settings-section {
-                    margin-bottom: 20px;
-                    padding-bottom: 16px;
+                    margin-bottom: 12px;
+                    padding-bottom: 8px;
                     border-bottom: 1px solid #eee;
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px 16px;
+                    align-items: start;
                 }
 
                 .settings-section:last-child {
@@ -406,25 +488,131 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                 }
 
                 .section-title {
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: #555;
-                    margin: 0 0 12px 0;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #333;
+                    color: #333;
+                    margin: 0 0 8px 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    grid-column: 1 / -1;
+                }
+                
+                .section-title::before {
+                    content: '';
+                    display: block;
+                    width: 4px;
+                    height: 16px;
+                    background: #667eea;
+                    border-radius: 2px;
                 }
 
                 .description-input {
                     width: 100%;
-                    padding: 8px;
+                    padding: 12px;
                     border: 1px solid #ddd;
-                    border-radius: 4px;
-                    font-size: 12px;
+                    border-radius: 6px;
+                    font-size: 13px;
                     font-family: inherit;
+                    color: #333;
+                    background: white;
                     resize: vertical;
+                    min-height: 80px;
+                    grid-column: 1 / -1;
                 }
 
                 .description-input:focus {
                     outline: none;
                     border-color: #667eea;
+                    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+                }
+
+                /* 콤보 탭 스타일 */
+                .combo-tabs {
+                    display: flex;
+                    gap: 4px;
+                    margin-bottom: 16px;
+                    background: #f5f5f5;
+                    padding: 4px;
+                    border-radius: 8px;
+                    grid-column: 1 / -1;
+                }
+
+                .combo-tab {
+                    flex: 1;
+                    padding: 8px 12px;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #666;
+                    background: transparent;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .combo-tab:hover {
+                    background: rgba(0, 0, 0, 0.05);
+                }
+
+                .combo-tab.active {
+                    background: white;
+                    color: #667eea;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+
+                .combo-info {
+                    font-size: 12px;
+                    color: #888;
+                    margin-bottom: 16px;
+                    text-align: center;
+                    background: #f9f9f9;
+                    padding: 8px;
+                    border-radius: 4px;
+                }
+
+                /* 체크박스 그리드 스타일 */
+                .checkbox-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                }
+
+                .checkbox-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 6px 8px;
+                    background: #f9f9f9;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    user-select: none;
+                }
+
+                .checkbox-item:hover {
+                    background: #f0f0f0;
+                    border-color: #667eea;
+                }
+
+                .checkbox-item input[type="checkbox"] {
+                    width: 18px;
+                    height: 18px;
+                    cursor: pointer;
+                    accent-color: #667eea;
+                }
+
+                .checkbox-item span {
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: #333;
+                }
+
+                .checkbox-item input[type="checkbox"]:checked + span {
+                    color: #667eea;
+                    font-weight: 600;
                 }
 
                 /* 스크롤바 스타일링 */
@@ -437,12 +625,12 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                 }
 
                 .editor-content::-webkit-scrollbar-thumb {
-                    background: #888;
+                    background: #ccc;
                     border-radius: 4px;
                 }
 
                 .editor-content::-webkit-scrollbar-thumb:hover {
-                    background: #555;
+                    background: #999;
                 }
             `}</style>
         </div>

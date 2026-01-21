@@ -56,6 +56,12 @@ export const StageDesigner: React.FC = () => {
                         <button onClick={resetAllSettings} className="btn-reset-all">
                             🔄 전체 초기화
                         </button>
+                        <button
+                            onClick={() => window.location.search = ''}
+                            className="btn-exit"
+                        >
+                            ↩️ 게임으로 복귀
+                        </button>
                     </div>
                 </div>
 
@@ -109,7 +115,7 @@ export const StageDesigner: React.FC = () => {
 
                 /* 왼쪽 디자이너 패널 */
                 .designer-panel {
-                    width: 450px;
+                    width: 900px;
                     background: white;
                     border-right: 2px solid #ddd;
                     display: flex;
@@ -145,7 +151,8 @@ export const StageDesigner: React.FC = () => {
                 }
 
                 .btn-export,
-                .btn-reset-all {
+                .btn-reset-all,
+                .btn-exit {
                     padding: 6px 12px;
                     border: none;
                     border-radius: 4px;
@@ -153,6 +160,18 @@ export const StageDesigner: React.FC = () => {
                     font-weight: 600;
                     cursor: pointer;
                     transition: all 0.2s;
+                }
+
+                .btn-exit {
+                    background: rgba(0, 0, 0, 0.3);
+                    color: white;
+                    margin-left: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                }
+
+                .btn-exit:hover {
+                    background: rgba(0, 0, 0, 0.5);
+                    border-color: rgba(255, 255, 255, 0.4);
                 }
 
                 .btn-export {

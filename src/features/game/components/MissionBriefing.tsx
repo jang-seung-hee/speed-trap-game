@@ -1,16 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { soundManager } from '../utils/SoundManager';
-import { GAME_SETTINGS } from '../constants';
+import { PhaseConfig } from '../constants'; // Import PhaseConfig type
 
 interface MissionBriefingProps {
     phase: number;
     prevStageResult: { type: 'PERFECT' | 'NORMAL' | null, value: number } | null;
     countdown: number | null;
     onStartPhase: () => void;
+    config: PhaseConfig;          // Current Phase Config
+    settings: any;                // Global Settings (for TARGET_SPEED)
 }
 
-export const MissionBriefing: React.FC<MissionBriefingProps> = ({ phase, prevStageResult, countdown, onStartPhase }) => {
+export const MissionBriefing: React.FC<MissionBriefingProps> = ({
+    phase,
+    prevStageResult,
+    countdown,
+    onStartPhase,
+    config,
+    settings
+}) => {
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -57,13 +66,13 @@ export const MissionBriefing: React.FC<MissionBriefingProps> = ({ phase, prevSta
                 <div className="h-1 w-32 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto mb-8" />
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10 backdrop-blur-sm max-w-sm mx-auto">
-                    <p className="text-blue-100 text-lg font-bold leading-snug break-keep mb-4">
-                        {GAME_SETTINGS.PHASES[phase]?.description}
+                    <p className="text-blue-100 text-lg font-bold leading-snug break-keep whitespace-pre-wrap mb-4">
+                        {config.description}
                     </p>
                     <div className="flex justify-center gap-4 text-[9px] text-white/30 font-bold uppercase tracking-[0.2em]">
-                        <span>Target: {GAME_SETTINGS.TARGET_SPEED}km/h</span>
+                        <span>Target: {settings.TARGET_SPEED}km/h</span>
                         <span>•</span>
-                        <span>Lanes: {GAME_SETTINGS.LANES}</span>
+                        <span>Lanes: {config.lanes}</span>
                     </div>
                 </div>
 

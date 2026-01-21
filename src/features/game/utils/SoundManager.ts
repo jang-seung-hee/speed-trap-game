@@ -220,6 +220,72 @@ export class SoundManager {
         });
     }
 
+    // 쉴드 방어음 (Sci-Fi Deflection)
+    // 쉴드 방어음 (Sci-Fi Deflection)
+    public playShieldBlock() {
+        const ctx = this.getContext();
+        if (!ctx || this.isMuted) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // 톱니파와 사인파 교차 느낌 (Sawtooth로 기계적 느낌)
+        osc.type = 'sawtooth';
+
+        // 주파수 하강 (막아내는 느낌)
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+
+        // 볼륨
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+        // 필터 효과 (Lowpass - 웅장함 추가)
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(3000, ctx.currentTime);
+        filter.frequency.linearRampToValueAtTime(500, ctx.currentTime + 0.3);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+    }
+
+    // 폭발음 (Explosion)
+    public playExplosion() {
+        const ctx = this.getContext();
+        if (!ctx || this.isMuted) return;
+
+        // Noise Buffer setup
+        const bufferSize = ctx.sampleRate * 0.5;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
+
+        gain.gain.setValueAtTime(1.0, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start();
+    }
+
     // --- BGM System (Mixed Playlist) ---
 
     private playRandomTrack() {
@@ -293,6 +359,7 @@ export class SoundManager {
         return this.isMuted;
     }
 
+
     public toggleBGM(): boolean {
         if (!this.bgmAudio) return false;
 
@@ -307,6 +374,10 @@ export class SoundManager {
 
     public isBGMPlaying(): boolean {
         return this.bgmAudio ? !this.bgmAudio.paused : false;
+    }
+
+    public isSystemMuted(): boolean {
+        return this.isMuted;
     }
 }
 

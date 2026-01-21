@@ -4,13 +4,14 @@ import { Car } from '../types';
 
 interface CarVisualProps {
     car: Car;
+    searchlightActive?: boolean;
 }
 
-export const CarVisual: React.FC<CarVisualProps> = React.memo(({ car }) => {
-    // 사용자의 요청대로 속도가 자동차 디자인보다 중요하므로, 항상 어느 정도 보이게 설정
-    // 단속 구역 근처에서는 더 환하게 강조됨
+export const CarVisual: React.FC<CarVisualProps> = React.memo(({ car, searchlightActive = false }) => {
+    // 서치라이트 효과 활성화 시 모든 속도계기판이 처음부터 표시됨
+    // 그렇지 않으면 단속 구역 근처에서만 표시
     const isNearZone = useMemo(() => car.y > GAME_SETTINGS.ZONE_BOTTOM_FIXED - 40, [car.y]);
-    const showDetail = useMemo(() => isNearZone || car.captured, [isNearZone, car.captured]);
+    const showDetail = useMemo(() => searchlightActive || isNearZone || car.captured, [searchlightActive, isNearZone, car.captured]);
 
     const renderCarBody = () => {
         const bodyClass = car.captured
@@ -98,6 +99,39 @@ export const CarVisual: React.FC<CarVisualProps> = React.memo(({ car }) => {
                         {/* Siren Lights on Roof */}
                         <div className="absolute top-[12%] left-[20%] w-3 h-2 bg-red-600 rounded-sm animate-pulse shadow-[0_0_10px_red]" />
                         <div className="absolute top-[12%] right-[20%] w-3 h-2 bg-red-600 rounded-sm animate-pulse shadow-[0_0_10px_red]" />
+                    </div>
+                );
+            case 'POLICE':
+                return (
+                    <div className="absolute inset-0">
+                        {/* Siren Light Effect */}
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-20 h-20 bg-blue-600/30 rounded-full blur-xl animate-pulse" />
+
+                        {/* Body Shadow */}
+                        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[75%] h-[75%] bg-black/60 blur-sm rounded-full transform scale-x-110" />
+
+                        {/* Black & White Body */}
+                        <div className={`absolute top-[10%] left-1/2 -translate-x-1/2 w-[70%] h-[80%] bg-slate-900 rounded-lg shadow-[inset_0_2px_5px_rgba(255,255,255,0.4),0_5px_10px_rgba(0,0,0,0.5)] border-b-4 border-slate-950 overflow-hidden`}>
+                            {/* White Doors/Side accents (top down view so sides) */}
+                            <div className="absolute top-0 left-0 w-full h-full bg-slate-900">
+                                {/* Center White Stripe Area for Roof */}
+                                <div className="absolute top-0 left-[20%] right-[20%] h-full bg-slate-100" />
+                            </div>
+
+                            {/* Cabin Glass */}
+                            <div className="absolute top-[5%] left-1/2 -translate-x-1/2 w-[85%] h-[25%] bg-sky-900 rounded-sm z-10" />
+
+                            {/* Police Text on Roof */}
+                            <div className="absolute top-[45%] left-1/2 -translate-x-1/2 z-10">
+                                <span className="text-[6px] font-black tracking-widest text-slate-900">POLICE</span>
+                            </div>
+                        </div>
+
+                        {/* Siren Bar */}
+                        <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-[50%] h-1.5 bg-slate-800 rounded-full z-20 flex justify-between px-0.5">
+                            <div className="w-[45%] h-full bg-red-600 rounded-l-full animate-pulse shadow-[0_0_8px_red]" />
+                            <div className="w-[45%] h-full bg-blue-600 rounded-r-full animate-pulse shadow-[0_0_8px_blue]" />
+                        </div>
                     </div>
                 );
             case 'BLUE':

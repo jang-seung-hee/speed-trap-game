@@ -11,48 +11,36 @@ interface UseComboRewardsProps {
 export const useComboRewards = ({ combo, phaseConfig }: UseComboRewardsProps) => {
     const [availableReward, setAvailableReward] = useState<{ threshold: number } | null>(null);
 
-    // 콤보 마일스톤 체크 (20, 30, 40, 50)
+    // 콤보 마일스톤 체크 (설정된 콤보 보상 키에 따라 동적 체크)
     useEffect(() => {
-        if ([20, 30, 40, 50].includes(combo)) {
+        if (!phaseConfig.comboRewards) return;
+
+        const thresholds = Object.keys(phaseConfig.comboRewards).map(Number);
+
+        if (thresholds.includes(combo)) {
             setAvailableReward({ threshold: combo });
             soundManager.playPowerUp(); // 보상 사용 가능 알림
         }
         if (combo === 0) {
             setAvailableReward(null);
         }
-    }, [combo]);
+    }, [combo, phaseConfig]);
 
     const claimReward = useCallback((onComplete: (effect: RewardEffect) => void) => {
         if (!availableReward) return;
 
-        // 스테이지별 설정된 확률에 따라 랜덤 선택
-        const probs = phaseConfig.rewardProbs;
-        const effects: RewardEffect[] = [
-            'HEAL_50',
-            'HEAL_100',
-            'SHIELD',
-            'BOMB_ALL',
-            'BOMB_HALF',
-            'ROAD_NARROW',
-            'CAMERA_BOOST',
-            'SLOW_TIME'
-        ];
+        // 해당 콤보 단계에 설정된 활성화된 효과 배열 가져오기
+        const effects = phaseConfig.comboRewards?.[availableReward.threshold];
 
-        // 확률 배열 생성
-        const probArray = effects.map(effect => probs[effect]);
-        const totalProb = probArray.reduce((sum, p) => sum + p, 0);
-
-        // 랜덤 선택
-        let random = Math.random() * totalProb;
-        let selectedEffect: RewardEffect = 'HEAL_50';
-
-        for (let i = 0; i < effects.length; i++) {
-            random -= probArray[i];
-            if (random <= 0) {
-                selectedEffect = effects[i];
-                break;
-            }
+        if (!effects || effects.length === 0) {
+            console.warn(`No active rewards for combo ${availableReward.threshold}`);
+            setAvailableReward(null);
+            return;
         }
+
+        // 활성화된 효과 중 랜덤 선택
+        const randomIndex = Math.floor(Math.random() * effects.length);
+        const selectedEffect = effects[randomIndex];
 
         onComplete(selectedEffect);
         setAvailableReward(null);

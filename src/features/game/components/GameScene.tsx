@@ -11,6 +11,7 @@ interface GameSceneProps {
     zoneHeight: number;  // 커스텀 설정에서 전달받은 zoneHeight
     lanes: number;       // 커스텀 설정에서 전달받은 lanes
     zoneBottomFixed: number;  // 커스텀 설정에서 전달받은 zoneBottomFixed
+    searchlightActive?: boolean; // 서치라이트 효과 활성화 여부
 }
 
 export const GameScene: React.FC<GameSceneProps> = ({
@@ -20,7 +21,8 @@ export const GameScene: React.FC<GameSceneProps> = ({
     zoneModifier,
     zoneHeight: baseZoneHeight,
     lanes,
-    zoneBottomFixed
+    zoneBottomFixed,
+    searchlightActive = false
 }) => {
     const zoneHeight = baseZoneHeight + zoneModifier;
     const zoneTop = zoneBottomFixed - zoneHeight;
@@ -69,7 +71,7 @@ export const GameScene: React.FC<GameSceneProps> = ({
                         willChange: 'left'
                     }}
                 >
-                    <CarVisual car={car} />
+                    <CarVisual car={car} searchlightActive={searchlightActive} />
                 </div>
             ))}
         </div>

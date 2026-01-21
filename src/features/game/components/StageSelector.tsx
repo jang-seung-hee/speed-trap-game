@@ -119,6 +119,7 @@ export const StageSelector: React.FC<StageSelectorProps> = ({
                     font-size: 14px;
                     font-weight: 600;
                     background: white;
+                    color: #333;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
@@ -213,6 +214,7 @@ export const StageSelector: React.FC<StageSelectorProps> = ({
                     border: 2px solid #ddd;
                     border-radius: 6px;
                     font-size: 14px;
+                    color: #333;
                     margin-bottom: 20px;
                 }
 

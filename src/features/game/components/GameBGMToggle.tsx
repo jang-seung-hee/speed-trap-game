@@ -3,28 +3,36 @@ import { soundManager } from '../utils/SoundManager';
 
 // 게임 중 BGM 토글 버튼
 export const GameBGMToggle: React.FC = () => {
-    const [isBGMOn, setIsBGMOn] = useState(false);
+    // isSoundOn: 소리가 켜져있는지 여부 (!isMuted)
+    const [isSoundOn, setIsSoundOn] = useState(true);
 
     useEffect(() => {
-        setIsBGMOn(soundManager.isBGMPlaying());
+        // 초기 상태 로드 (systemMuted가 true면 soundOn은 false)
+        setIsSoundOn(!soundManager.isSystemMuted());
     }, []);
 
     const handleToggle = () => {
-        soundManager.playClick();
-        const newState = soundManager.toggleBGM();
-        setIsBGMOn(newState);
+        // toggleMute는 mute 상태(true/false)를 반환함. 
+        // mute가 되면 isSoundOn은 false가 되어야 함.
+        const isMuted = soundManager.toggleMute();
+        setIsSoundOn(!isMuted);
+
+        if (!isMuted) {
+            soundManager.playClick();
+        }
     };
 
     return (
         <button
             onClick={handleToggle}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-md border ${isBGMOn
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-md border ${isSoundOn
                 ? 'bg-blue-500/20 border-blue-400/30 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                : 'bg-black/40 border-white/10 text-white/40 hover:text-white/60'
+                : 'bg-red-500/20 border-red-400/30 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
                 }`}
+            title={isSoundOn ? "음소거" : "소리 켜기"}
         >
             <span className="text-xl">
-                {isBGMOn ? (
+                {isSoundOn ? (
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
                     </svg>
