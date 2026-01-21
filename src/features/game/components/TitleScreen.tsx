@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { soundManager } from '../utils/SoundManager';
+import { checkAndResetGameVersion, getGameVersion } from '../utils/versionManager';
 
 interface TitleScreenProps {
   onStart: (phase: number) => void;
@@ -12,9 +13,16 @@ interface TitleScreenProps {
 const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) => {
   const [maxCleared, setMaxCleared] = useState(1);
   const [selectedPhase, setSelectedPhase] = useState(1);
+  const [showVersionResetModal, setShowVersionResetModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // 버전 체크 및 리셋
+      const wasReset = checkAndResetGameVersion();
+      if (wasReset) {
+        setShowVersionResetModal(true);
+      }
+
       const saved = localStorage.getItem('maxClearedPhase');
       if (saved) {
         const max = parseInt(saved, 10);
@@ -166,8 +174,64 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, onShowHighScores }) 
 
       {/* 데스크탑 전용: 프레임 외부 하단 푸터 */}
       <div className="hidden md:block absolute bottom-8 z-20 text-gray-500 text-sm font-mono">
-        © 2026 SPEED TRAP PROJECT
+        © 2026 SPEED TRAP PROJECT | v{getGameVersion()}
       </div>
+
+      {/* 모바일용: 버전 정보 */}
+      <div className="md:hidden absolute bottom-4 z-20 text-gray-500 text-xs font-mono">
+        v{getGameVersion()}
+      </div>
+
+      {/* 버전 업데이트 안내 모달 */}
+      <AnimatePresence>
+        {showVersionResetModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowVersionResetModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-blue-500/30 rounded-2xl p-8 max-w-md mx-4 shadow-[0_0_50px_rgba(59,130,246,0.3)]"
+            >
+              <div className="text-center">
+                <div className="text-5xl mb-4">🎮</div>
+                <h2 className="text-2xl font-black text-blue-400 mb-4">게임 버전 업데이트!</h2>
+                <div className="text-gray-300 space-y-3 mb-6">
+                  <p className="text-lg font-bold text-blue-300">
+                    v{getGameVersion()}
+                  </p>
+                  <p className="text-sm leading-relaxed">
+                    게임이 새로운 버전으로 업데이트되었습니다!
+                  </p>
+                  <p className="text-sm leading-relaxed text-yellow-400/80">
+                    ⚠️ 밸런스 조정 및 새로운 스테이지가 추가되어<br />
+                    진행도가 초기화되었습니다.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-4">
+                    처음부터 다시 도전하여<br />
+                    새로운 경험을 즐겨보세요! 🚀
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    soundManager.playClick();
+                    setShowVersionResetModal(false);
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-bold text-white hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg"
+                >
+                  확인
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

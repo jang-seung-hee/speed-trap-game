@@ -76,7 +76,7 @@ export const GAME_SETTINGS = {
     /** 스테이지(PHASE)별 상세 난이도 설정 */
     PHASES: {
         1: {
-            scoreLimit: 2000,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            scoreLimit: 700,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 30,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 1,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
             speedCoefficient: 160, // 주행 속도 계수 (낮을수록 빠름)
@@ -559,68 +559,170 @@ export const GAME_SETTINGS = {
             description: `주의 : 감속 트릭입니다!`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
         10: {
-            scoreLimit: 1000,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
-            zoneHeight: 22,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
-            lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
-            speedCoefficient: 160, // 주행 속도 계수 (낮을수록 빠름)
-            trickProb: 0.3,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
-            nitroProb: 0,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
+            scoreLimit: 3500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            zoneHeight: 25,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
+            lanes: 4,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
+            speedCoefficient: 120, // 주행 속도 계수 (낮을수록 빠름)
+            trickProb: 0.1,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
+            nitroProb: 0.1,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
             swerveProb: 0,       // 차량이 단속 구역 앞에서 차선을 변경(SWERVE)할 확률 (0 ~ 1 사이)
             stopAndGoProb: 0,    // 차량이 단속 구역 앞에서 멈췄다 가는(STOP_AND_GO) 확률
-            motorcycleProb: 0,   // 오토바이 등장 확률
-            hasAmbulance: false,    // 병원차 등장 여부
-            hasPolice: false,      // 경찰차 등장 여부
-            spawnInterval: 1000,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
+            motorcycleProb: 0.05,   // 오토바이 등장 확률
+            hasAmbulance: true,    // 병원차 등장 여부
+            hasPolice: true,      // 경찰차 등장 여부
+            spawnInterval: 800,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
             spawnYThreshold: 30,  // [등장 밀도] 이전 차량이 화면 몇 % 지점까지 내려가야 다음 차가 나올 수 있는지 설정
-            minSpeed: 92,         // 주행 최소 속도 (km/h)
-            maxSpeed: 125,         // 주행 최대 속도 (km/h)
-            overspeedProb: 0.6,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
+            minSpeed: 120,         // 주행 최소 속도 (km/h)
+            maxSpeed: 155,         // 주행 최대 속도 (km/h)
+            overspeedProb: 0.7,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
             // 콤보 보상 (콤보 수 -> 활성화된 효과 배열)
             comboRewards: {
                 '10': [
-                    'HEAL_50',
-                    'HEAL_100',
-                    'SHIELD',
-                    'BOMB_ALL',
-                    'BOMB_HALF',
-                    'ROAD_NARROW',
                     'CAMERA_BOOST',
-                    'SLOW_TIME'
+                    'SLOW_TIME',
+                    'SHIELD',
+                    'SEARCHLIGHT',
+                    'DOUBLE_SCORE'
                 ],
                 '20': [
                     'HEAL_50',
-                    'HEAL_100',
-                    'SHIELD',
-                    'BOMB_ALL',
                     'BOMB_HALF',
-                    'ROAD_NARROW',
-                    'CAMERA_BOOST',
-                    'SLOW_TIME'
+                    'DOUBLE_SCORE'
                 ],
                 '30': [
-                    'HEAL_50',
                     'HEAL_100',
-                    'SHIELD',
-                    'BOMB_ALL',
-                    'BOMB_HALF',
-                    'ROAD_NARROW',
-                    'CAMERA_BOOST',
-                    'SLOW_TIME'
+                    'BOMB_ALL'
                 ],
                 '40': [
-                    'HEAL_50',
-                    'HEAL_100',
-                    'SHIELD',
-                    'BOMB_ALL',
-                    'BOMB_HALF',
-                    'ROAD_NARROW',
-                    'CAMERA_BOOST',
-                    'SLOW_TIME'
+                    'HEAL_100'
                 ]
             },
-            description: `주의: 갑자기 속도를 줄이는 차량이 나타납니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+            description: `특명! 파파라치! #10`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
         11: {
+            scoreLimit: 3500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            zoneHeight: 25,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
+            lanes: 4,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
+            speedCoefficient: 100, // 주행 속도 계수 (낮을수록 빠름)
+            trickProb: 0.1,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
+            nitroProb: 0.1,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
+            swerveProb: 0,       // 차량이 단속 구역 앞에서 차선을 변경(SWERVE)할 확률 (0 ~ 1 사이)
+            stopAndGoProb: 0.05,    // 차량이 단속 구역 앞에서 멈췄다 가는(STOP_AND_GO) 확률
+            motorcycleProb: 0.05,   // 오토바이 등장 확률
+            hasAmbulance: true,    // 병원차 등장 여부
+            hasPolice: true,      // 경찰차 등장 여부
+            spawnInterval: 800,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
+            spawnYThreshold: 30,  // [등장 밀도] 이전 차량이 화면 몇 % 지점까지 내려가야 다음 차가 나올 수 있는지 설정
+            minSpeed: 120,         // 주행 최소 속도 (km/h)
+            maxSpeed: 155,         // 주행 최대 속도 (km/h)
+            overspeedProb: 0.7,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
+            // 콤보 보상 (콤보 수 -> 활성화된 효과 배열)
+            comboRewards: {
+                '10': [
+                    'CAMERA_BOOST',
+                    'SLOW_TIME',
+                    'SHIELD',
+                    'SEARCHLIGHT',
+                    'DOUBLE_SCORE'
+                ],
+                '20': [
+                    'HEAL_50',
+                    'BOMB_HALF',
+                    'DOUBLE_SCORE'
+                ],
+                '30': [
+                    'HEAL_100',
+                    'BOMB_ALL'
+                ],
+                '40': [
+                    'HEAL_100'
+                ]
+            },
+            description: `특명! 파파라치 #11`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+        },
+        12: {
+            scoreLimit: 3500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            zoneHeight: 25,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
+            lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
+            speedCoefficient: 100, // 주행 속도 계수 (낮을수록 빠름)
+            trickProb: 0.1,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
+            nitroProb: 0.1,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
+            swerveProb: 0.1,       // 차량이 단속 구역 앞에서 차선을 변경(SWERVE)할 확률 (0 ~ 1 사이)
+            stopAndGoProb: 0.05,    // 차량이 단속 구역 앞에서 멈췄다 가는(STOP_AND_GO) 확률
+            motorcycleProb: 0.05,   // 오토바이 등장 확률
+            hasAmbulance: true,    // 병원차 등장 여부
+            hasPolice: true,      // 경찰차 등장 여부
+            spawnInterval: 800,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
+            spawnYThreshold: 30,  // [등장 밀도] 이전 차량이 화면 몇 % 지점까지 내려가야 다음 차가 나올 수 있는지 설정
+            minSpeed: 120,         // 주행 최소 속도 (km/h)
+            maxSpeed: 155,         // 주행 최대 속도 (km/h)
+            overspeedProb: 0.7,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
+            // 콤보 보상 (콤보 수 -> 활성화된 효과 배열)
+            comboRewards: {
+                '10': [
+                    'CAMERA_BOOST',
+                    'SLOW_TIME',
+                    'SHIELD',
+                    'SEARCHLIGHT',
+                    'DOUBLE_SCORE'
+                ],
+                '20': [
+                    'HEAL_50',
+                    'BOMB_HALF',
+                    'DOUBLE_SCORE'
+                ],
+                '30': [
+                    'HEAL_100',
+                    'BOMB_ALL'
+                ],
+                '40': [
+                    'HEAL_100'
+                ]
+            },
+            description: `특명! 파파라치 #12`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+        },
+        13: {
+            scoreLimit: 3500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            zoneHeight: 20,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
+            lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
+            speedCoefficient: 90, // 주행 속도 계수 (낮을수록 빠름)
+            trickProb: 0.1,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
+            nitroProb: 0.1,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
+            swerveProb: 0.1,       // 차량이 단속 구역 앞에서 차선을 변경(SWERVE)할 확률 (0 ~ 1 사이)
+            stopAndGoProb: 0.05,    // 차량이 단속 구역 앞에서 멈췄다 가는(STOP_AND_GO) 확률
+            motorcycleProb: 0.1,   // 오토바이 등장 확률
+            hasAmbulance: true,    // 병원차 등장 여부
+            hasPolice: true,      // 경찰차 등장 여부
+            spawnInterval: 700,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
+            spawnYThreshold: 30,  // [등장 밀도] 이전 차량이 화면 몇 % 지점까지 내려가야 다음 차가 나올 수 있는지 설정
+            minSpeed: 120,         // 주행 최소 속도 (km/h)
+            maxSpeed: 155,         // 주행 최대 속도 (km/h)
+            overspeedProb: 0.7,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
+            // 콤보 보상 (콤보 수 -> 활성화된 효과 배열)
+            comboRewards: {
+                '10': [
+                    'CAMERA_BOOST',
+                    'SLOW_TIME',
+                    'SHIELD',
+                    'SEARCHLIGHT',
+                    'DOUBLE_SCORE'
+                ],
+                '20': [
+                    'HEAL_50',
+                    'BOMB_HALF',
+                    'DOUBLE_SCORE'
+                ],
+                '30': [
+                    'HEAL_100',
+                    'BOMB_ALL'
+                ],
+                '40': [
+                    'HEAL_100'
+                ]
+            },
+            description: `특명! 파파라치 #13`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+        },
+        14: {
             scoreLimit: 1500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 22,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -682,7 +784,69 @@ export const GAME_SETTINGS = {
             },
             description: `위험: 차선을 변경하며 단속을 회피합니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        12: {
+        15: {
+            scoreLimit: 1500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
+            zoneHeight: 22,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
+            lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
+            speedCoefficient: 160, // 주행 속도 계수 (낮을수록 빠름)
+            trickProb: 0,        // 차량이 단속 구역 앞에서 급브레이크(TRICK)를 밟을 확률 (0 ~ 1 사이)
+            nitroProb: 0,        // 차량이 단속 구역 앞에서 급가속(NITRO)할 확률 (0 ~ 1 사이)
+            swerveProb: 0.3,       // 차량이 단속 구역 앞에서 차선을 변경(SWERVE)할 확률 (0 ~ 1 사이)
+            stopAndGoProb: 0,    // 차량이 단속 구역 앞에서 멈췄다 가는(STOP_AND_GO) 확률
+            motorcycleProb: 0,   // 오토바이 등장 확률
+            hasAmbulance: false,    // 병원차 등장 여부
+            hasPolice: false,      // 경찰차 등장 여부
+            spawnInterval: 1100,    // 새로운 차량이 스폰되는 시간 간격 (ms 단위, 예: 1000 = 1초)
+            spawnYThreshold: 35,  // [등장 밀도] 이전 차량이 화면 몇 % 지점까지 내려가야 다음 차가 나올 수 있는지 설정
+            minSpeed: 88,         // 주행 최소 속도 (km/h)
+            maxSpeed: 115,         // 주행 최대 속도 (km/h)
+            overspeedProb: 0.6,    // 과속 차량(100km/h 초과)이 등장할 전체 확률 (0 ~ 1 사이)
+            // 콤보 보상 (콤보 수 -> 활성화된 효과 배열)
+            comboRewards: {
+                '10': [
+                    'HEAL_50',
+                    'HEAL_100',
+                    'SHIELD',
+                    'BOMB_ALL',
+                    'BOMB_HALF',
+                    'ROAD_NARROW',
+                    'CAMERA_BOOST',
+                    'SLOW_TIME'
+                ],
+                '20': [
+                    'HEAL_50',
+                    'HEAL_100',
+                    'SHIELD',
+                    'BOMB_ALL',
+                    'BOMB_HALF',
+                    'ROAD_NARROW',
+                    'CAMERA_BOOST',
+                    'SLOW_TIME'
+                ],
+                '30': [
+                    'HEAL_50',
+                    'HEAL_100',
+                    'SHIELD',
+                    'BOMB_ALL',
+                    'BOMB_HALF',
+                    'ROAD_NARROW',
+                    'CAMERA_BOOST',
+                    'SLOW_TIME'
+                ],
+                '40': [
+                    'HEAL_50',
+                    'HEAL_100',
+                    'SHIELD',
+                    'BOMB_ALL',
+                    'BOMB_HALF',
+                    'ROAD_NARROW',
+                    'CAMERA_BOOST',
+                    'SLOW_TIME'
+                ]
+            },
+            description: `새 스테이지 13`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
+        },
+        16: {
             scoreLimit: 1500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 25,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -744,7 +908,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고: 급가속하는 차량이 있습니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        13: {
+        17: {
             scoreLimit: 1500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 20,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -806,7 +970,7 @@ export const GAME_SETTINGS = {
             },
             description: `주의: 정지선 앞에서 멈췄다 도주하는 차량이 있습니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        14: {
+        18: {
             scoreLimit: 1500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 20,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -868,7 +1032,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고: 작고 빠른 오토바이 부대가 출현했습니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        15: {
+        19: {
             scoreLimit: 2500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 18,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -930,7 +1094,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고 : 차들이 더 많고 더 빠릅니다`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        16: {
+        20: {
             scoreLimit: 2500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 18,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -992,7 +1156,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고: 혼란이 점점 가중되고 있습니다`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        17: {
+        21: {
             scoreLimit: 2500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 18,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -1054,7 +1218,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고: 오토바이가 또 등장 했습니다`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        18: {
+        22: {
             scoreLimit: 2500,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 18,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
@@ -1116,7 +1280,7 @@ export const GAME_SETTINGS = {
             },
             description: `경고: 거의 모든 차들이 과속입니다.`      // 스테이지(Phase) 시작 시 화면 중앙에 표시될 미션 설명
         },
-        19: {
+        23: {
             scoreLimit: 99999,      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
             zoneHeight: 18,       // 노란색 단속 영역의 세로 높이 (화면 전체 높이 대비 % 수치)
             lanes: 5,            // 도로의 차선 수 (스테이지별로 다르게 설정 가능)
