@@ -2,20 +2,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { soundManager } from '../utils/SoundManager';
 import { PhaseConfig } from '../constants'; // Import PhaseConfig type
+import { GameBGMToggle } from './GameBGMToggle';
 
 interface MissionBriefingProps {
     phase: number;
     prevStageResult: { type: 'PERFECT' | 'NORMAL' | null, value: number } | null;
-    countdown: number | null;
-    onStartPhase: () => void;
-    config: PhaseConfig;          // Current Phase Config
-    settings: any;                // Global Settings (for TARGET_SPEED)
+    onStartPhase: () => void; // Now just triggers the "Loading" phase
+    config: PhaseConfig;
+    settings: any;
 }
 
 export const MissionBriefing: React.FC<MissionBriefingProps> = ({
     phase,
     prevStageResult,
-    countdown,
     onStartPhase,
     config,
     settings
@@ -69,36 +68,39 @@ export const MissionBriefing: React.FC<MissionBriefingProps> = ({
                     <p className="text-blue-100 text-lg font-bold leading-snug break-keep whitespace-pre-wrap mb-4">
                         {config.description}
                     </p>
-                    <div className="flex justify-center gap-4 text-[9px] text-white/30 font-bold uppercase tracking-[0.2em]">
-                        <span>Target: {settings.TARGET_SPEED}km/h</span>
-                        <span>•</span>
-                        <span>Lanes: {config.lanes}</span>
+                    <div className="mt-6 mb-2">
+                        <div className="text-xs text-yellow-400/70 font-bold uppercase tracking-widest mb-1">
+                            MISSION GOAL
+                        </div>
+                        <div className="text-4xl font-black text-white italic tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                            {config.scoreLimit.toLocaleString()} PTS
+                        </div>
                     </div>
                 </div>
 
-                {countdown === null ? (
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                            soundManager.playClick();
-                            onStartPhase();
-                        }}
-                        className="px-10 py-4 bg-yellow-400 text-black text-xl font-black italic rounded-full shadow-[0_0_40px_rgba(234,179,8,0.3)] hover:shadow-[0_0_60px_rgba(234,179,8,0.5)] transition-all whitespace-nowrap"
-                    >
-                        READY TO ACTION
-                    </motion.button>
-                ) : (
-                    <motion.div
-                        key={countdown}
-                        initial={{ scale: 2, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="text-9xl font-black text-white italic"
-                    >
-                        {countdown}
-                    </motion.div>
-                )}
+                <div className="flex justify-center gap-4 text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-10">
+                    <span>Speed Limit: {settings.TARGET_SPEED}km/h</span>
+                    <span>•</span>
+                    <span>Lanes: {config.lanes}</span>
+                </div>
+
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        soundManager.playClick();
+                        onStartPhase();
+                    }}
+                    className="px-10 py-4 bg-yellow-400 text-black text-xl font-black italic rounded-full shadow-[0_0_40px_rgba(234,179,8,0.3)] hover:shadow-[0_0_60px_rgba(234,179,8,0.5)] transition-all whitespace-nowrap"
+                >
+                    READY TO ACTION
+                </motion.button>
             </motion.div>
+
+            {/* Same BGM Toggle Position as GameStage */}
+            <div className="absolute bottom-4 left-4 z-50">
+                <GameBGMToggle />
+            </div>
         </motion.div>
     );
 };

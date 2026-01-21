@@ -47,7 +47,7 @@ export const GameScene: React.FC<GameSceneProps> = ({
 
             {/* Detection Zone UI */}
             <div
-                className="absolute w-full z-10 pointer-events-none transition-all duration-500"
+                className="absolute w-full z-10 pointer-events-none"
                 style={{ top: `${zoneTop}%`, height: `${zoneHeight}%` }}
             >
                 <div className="absolute top-0 inset-x-0 h-1 bg-yellow-400/60 shadow-[0_0_10px_yellow]" />

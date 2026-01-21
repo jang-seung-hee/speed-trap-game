@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { soundManager } from '../utils/SoundManager';
 import { GameHUD } from './GameHUD';
@@ -19,6 +19,7 @@ import { GameControls } from './GameControls';
 import { CustomCursor } from './CustomCursor';
 import { GameMessage } from './GameMessage';
 import { EffectTimer } from './EffectTimer';
+import { LoadingScreen } from './LoadingScreen';
 
 import { CustomGameSettings } from '../utils/stageDesignerStorage';
 
@@ -87,6 +88,17 @@ const GameStage: React.FC<GameStageProps> = ({
         customSettings
     });
 
+    const [showLoading, setShowLoading] = useState(false);
+
+    const handleReady = () => {
+        setShowLoading(true);
+    };
+
+    const handleLoadingComplete = useCallback(() => {
+        setShowLoading(false);
+        startPhaseAction(); // Starts the Countdown
+    }, [startPhaseAction]);
+
     // 현재 페이즈 설정 가져오기
     const currentPhaseConfig = settings.PHASES[phase] || settings.PHASES[1];
 
@@ -147,19 +159,48 @@ const GameStage: React.FC<GameStageProps> = ({
             {/* VFX: Messages */}
             <GameMessage message={message} />
 
-            {/* Stage Transition Overlay */}
+            {/* Stage Transition: Briefing -> Loading -> Countdown */}
+            {/* Stage Transition: Briefing -> Loading -> Countdown */}
+            {/* Show Loading Screen ON TOP of everything when active to prevent gaps */}
             <AnimatePresence>
-                {isTransitioning && (
+                {showLoading && (
+                    <LoadingScreen key="loading" onComplete={handleLoadingComplete} />
+                )}
+            </AnimatePresence>
+
+            {/* Mission Briefing - Only show when NOT loading and IS transitioning */}
+            <AnimatePresence>
+                {!showLoading && isTransitioning && countdown === null && (
                     <MissionBriefing
+                        key="briefing"
                         phase={phase}
                         prevStageResult={prevStageResult}
-                        countdown={countdown}
-                        onStartPhase={startPhaseAction}
+                        onStartPhase={handleReady}
                         config={currentPhaseConfig}
                         settings={settings}
                     />
                 )}
-                {/* Stage Phase Clear Announcement Overaly */}
+            </AnimatePresence>
+
+            {/* Countdown Overlay - Show when transitioning AND countdown is active */}
+            <AnimatePresence>
+                {isTransitioning && countdown !== null && (
+                    <div className="absolute inset-0 z-[200] flex items-center justify-center pointer-events-none">
+                        <motion.div
+                            key={countdown}
+                            initial={{ scale: 2, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            className="text-9xl font-black text-white italic drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                        >
+                            {countdown}
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Stage Phase Clear Announcement Overaly */}
+            <AnimatePresence>
                 {isStageClear && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[80]">
                         <h2
