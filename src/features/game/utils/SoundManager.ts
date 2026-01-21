@@ -4,7 +4,9 @@ export class SoundManager {
     private bgmAudio: HTMLAudioElement | null = null;
     private bgmFiles: string[] = [
         '/Come Get With Us - TrackTribe.mp3',
-        '/KnockOut - TrackTribe.mp3'
+        '/KnockOut - TrackTribe.mp3',
+        '/BGM_1.mp3',
+        '/BGM_2.mp3'
     ];
     private currentBgmIndex: number = -1;
     private shutterBuffer: AudioBuffer | null = null; // 셔터 사운드 버퍼 캐싱
@@ -317,6 +319,12 @@ export class SoundManager {
                     this.bgmAudio.play().catch(e => console.log('BGM Resume failed:', e));
                 }
             }
+        }
+    }
+
+    public pauseBGM() {
+        if (this.bgmAudio && !this.bgmAudio.paused) {
+            this.bgmAudio.pause();
         }
     }
 

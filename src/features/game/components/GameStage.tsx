@@ -99,6 +99,17 @@ const GameStage: React.FC<GameStageProps> = ({
         startPhaseAction(); // Starts the Countdown
     }, [startPhaseAction]);
 
+    // BGM Control on Pause
+    useEffect(() => {
+        if (isPaused) {
+            soundManager.pauseBGM();
+        } else {
+            // Only resume if it's NOT supposed to be muted by system
+            // But playBGM handles the isMuted check internaly.
+            soundManager.playBGM();
+        }
+    }, [isPaused]);
+
     // 현재 페이즈 설정 가져오기
     const currentPhaseConfig = settings.PHASES[phase] || settings.PHASES[1];
 

@@ -25,7 +25,9 @@ const DEFAULT_ACTIVE_REWARDS: RewardEffect[] = [
     'CAMERA_BOOST',
     'SLOW_TIME',
     'DOUBLE_SCORE',
-    'SEARCHLIGHT'
+    'SEARCHLIGHT',
+    'SCORE_1000',
+    'SCORE_2000'
 ];
 
 export const StageEditor: React.FC<StageEditorProps> = ({
@@ -386,6 +388,24 @@ export const StageEditor: React.FC<StageEditorProps> = ({
                                     onChange={() => toggleRewardEffect('SEARCHLIGHT')}
                                 />
                                 <span>서치라이트</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('SCORE_1000')}
+                                    onChange={() => toggleRewardEffect('SCORE_1000')}
+                                />
+                                <span>1000점 (1500)</span>
+                            </label>
+
+                            <label className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    checked={currentEffects.includes('SCORE_2000')}
+                                    onChange={() => toggleRewardEffect('SCORE_2000')}
+                                />
+                                <span>2000점 (3000)</span>
                             </label>
                         </div>
                     </div>

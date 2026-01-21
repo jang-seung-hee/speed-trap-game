@@ -120,6 +120,11 @@ export const useGameEngine = ({
 
             // Visual feedback? maybe already covered by disappearing car + global score update.
 
+            // Reset spawn availability for these lanes so new cars can come out!
+            if (target) {
+                lastLaneSpawnY.current[target.lane] = 100; // Reset to safe 'far away' value to allow immediate spawn check
+            }
+
             index++;
             setTimeout(popNext, intervalTime);
         };
@@ -168,20 +173,19 @@ export const useGameEngine = ({
     }, [score]);
 
     const flushCombo = useCallback(() => {
-        // If Shield is active, consume it and save combo
+        // If Shield is active, consume it and preserve combo
         if (shield > 0) {
             setShield(prev => Math.max(0, prev - 1));
-            soundManager.playShieldBlock(); // Use shield block sound
+            soundManager.playShieldBlock();
             showMessage("SHIELD PROTECTED!", "#00ffff", 800);
-            // Shield protects HP but COMBO breaks
+            return; // Exit without resetting combo (shield keeps combo alive)
         }
 
-        if (comboScore > 0) {
-            setScore(prev => prev + comboScore);
-            setComboScore(0);
-            setCombo(0);
-        }
-    }, [comboScore, shield]);
+        // Reset combo multiplier and display
+        // (Points are already in main score, so no transfer needed)
+        setComboScore(0);
+        setCombo(0);
+    }, [shield, showMessage]);
 
     const spawnCar = useCallback(() => {
         const config = settings.PHASES[phase] || settings.PHASES[5];
@@ -409,7 +413,13 @@ export const useGameEngine = ({
                     const newCombo = prevCombo + 1;
                     const comboBonus = newCombo * 2;
                     const totalGain = baseScore + comboBonus;
-                    setComboScore(prevScore => prevScore + totalGain);
+
+                    // Immediately add to main score
+                    setScore(prev => prev + totalGain);
+
+                    // comboScore now only tracks current combo bonus for display
+                    setComboScore(comboBonus);
+
                     return newCombo;
                 });
 
@@ -420,7 +430,7 @@ export const useGameEngine = ({
                 flushCombo(); // Check Shield inside flushCombo
 
                 if (shield <= 0) {
-                    setScore(s => Math.max(0, s - 30));
+                    // setScore(s => Math.max(0, s - 30)); // 점수 차감 제거
                     setHp(h => Math.max(0, h - 10));
                     showMessage("FAILED!", "#FF0040", 500); // Electric Red-Pink
                     soundManager.playFail();
@@ -444,7 +454,7 @@ export const useGameEngine = ({
                 flushCombo(); // Check Shield
 
                 if (shield <= 0) {
-                    setScore(s => Math.max(0, s - 30));
+                    // setScore(s => Math.max(0, s - 30)); // 점수 차감 제거
                     setHp(h => Math.max(0, h - 10));
                     showMessage("MISS!", "#FF0040", 500); // Electric Red-Pink
                     soundManager.playFail();
@@ -476,12 +486,9 @@ export const useGameEngine = ({
                 setIsStageClear(true);
                 soundManager.playLevelUp(); // Play fanfare right away
 
-                // Flush remaining combo
-                if (comboScore > 0) {
-                    setScore(prev => prev + comboScore);
-                    setComboScore(0);
-                    setCombo(0);
-                }
+                // Reset combo display (points already in main score)
+                setComboScore(0);
+                setCombo(0);
 
                 // Wait 2.5s then transition
                 setTimeout(() => {
@@ -614,11 +621,7 @@ export const useGameEngine = ({
                 lastLaneSpawnY.current[car.lane] = nextY;
 
                 if (car.y < settings.ZONE_BOTTOM_FIXED && nextY >= settings.ZONE_BOTTOM_FIXED && !car.captured && car.speed >= settings.TARGET_SPEED) {
-                    if (comboScore > 0) {
-                        setScore(s => s + comboScore);
-                        setComboScore(0);
-                        setCombo(0);
-                    }
+                    flushCombo();
 
                     // If Game Over is processing, don't reduce HP further or show excessive messages
                     if (!isGameOverProcessing.current) {
@@ -832,15 +835,21 @@ export const useGameEngine = ({
                     showMessage("서치라이트 종료", '#00CED1', 2000);
                 }, 64000); // 4초 + 60초
                 break;
+            case 'SCORE_1000':
+                setScore(prev => prev + 1500); // 1000점 효과는 1500점 추가
+                showMessage("보너스 +1500!", '#FFD700', 2000);
+                soundManager.playSuccess();
+                break;
+            case 'SCORE_2000':
+                setScore(prev => prev + 3000); // 2000점 효과는 3000점 추가
+                showMessage("보너스 +3000!", '#FFD700', 2000);
+                soundManager.playSuccess();
+                break;
         }
 
-        // 콤보 리셋
-        if (comboScore > 0) {
-            setScore(prev => prev + comboScore);
-        }
-        setCombo(0);
-        setComboScore(0);
-    }, [maxHp, comboScore, showMessage]);
+        // 콤보 리셋 및 점수 획득
+        flushCombo();
+    }, [maxHp, flushCombo, showMessage]);
 
     // Exposed functionality
     return {

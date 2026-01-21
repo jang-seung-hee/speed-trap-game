@@ -19,7 +19,9 @@ export type RewardEffect =
     | 'CAMERA_BOOST' // 고성능 카메라 (단속 구역 40%)
     | 'SLOW_TIME'    // 슬로우 (60초간 속도 계수 250)
     | 'DOUBLE_SCORE' // 더블득점 (1분간 퍼펙트/굿/배드 점수 2배, 콤보 점수 제외)
-    | 'SEARCHLIGHT'; // 서치라이트 (1분간 모든 속도계기판 전체 표시)
+    | 'SEARCHLIGHT' // 서치라이트 (1분간 모든 속도계기판 전체 표시)
+    | 'SCORE_1000'   // 즉시 1500점 추가 (이름은 1000이지만 요청은 1500점) -> 아, 요청은 "1000점: 1500점 추가" 이므로 키값은 SCORE_1000, 설명은 1500점
+    | 'SCORE_2000';  // 즉시 3000점 추가 (키값 SCORE_2000, 설명은 3000점)
 
 export interface PhaseConfig {
     scoreLimit: number;      // 해당 단계에서 다음 단계로 넘어가기 위해 획득해야 하는 점수 (상대 점수)
