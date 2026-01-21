@@ -4,7 +4,7 @@
  */
 
 // package.json의 버전을 가져옵니다
-const GAME_VERSION = '0.1.0';
+const GAME_VERSION = '0.1.1';
 
 /**
  * 게임 버전을 확인하고 필요시 진행도를 리셋합니다.

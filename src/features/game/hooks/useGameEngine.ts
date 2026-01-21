@@ -159,6 +159,7 @@ export const useGameEngine = ({
         }
         isAmbulanceSpawnedInPhase.current = false;
         isPoliceSpawnedInPhase.current = false;
+        setCars([]); // Reset cars on stage change
     }, [phase, settings]);
 
     // Sync scoreRef
