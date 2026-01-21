@@ -11,6 +11,7 @@ import { PhoneFrameWrapper } from './PhoneFrameWrapper';
 import { soundManager } from '../utils/SoundManager';
 import { scoreService } from '../services/scoreService';
 import ShareResultButton from './ShareResultButton';
+import { InAppBrowserOverlay } from './InAppBrowserOverlay';
 
 type GameState = 'TITLE' | 'PLAYING' | 'GAMEOVER' | 'HIGHSCORE';
 
@@ -25,7 +26,6 @@ const GameMain: React.FC = () => {
     const containerRef = React.useRef<HTMLElement>(null);
     const [isDevMode, setIsDevMode] = useState(false);
 
-    // 하이드레이션 오류 방지를 위한 마운트 체크
     // 하이드레이션 오류 방지를 위한 마운트 체크
     useEffect(() => {
         setMounted(true);
@@ -80,6 +80,7 @@ const GameMain: React.FC = () => {
 
     return (
         <PhoneFrameWrapper>
+            <InAppBrowserOverlay />
             <main ref={containerRef as any} className="relative w-full h-full bg-black overflow-hidden font-sans">
                 {gameState === 'TITLE' && (
                     <TitleScreen onStart={startGame} onShowHighScores={showHighScores} />
