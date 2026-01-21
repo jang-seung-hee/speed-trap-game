@@ -38,9 +38,20 @@ const GameMain: React.FC = () => {
     }, []);
 
     const startGame = useCallback((phase: number = 1) => {
-        // 전체화면 API 대신 CSS로 화면을 꽉 채움 (카카오톡 인앱 브라우저 호환성)
-        // 모바일 브라우저의 주소창을 숨기기 위한 스크롤 트릭
+        // [수정됨] 브라우저 전체 화면 API 호출 (몰입 모드)
         if (typeof window !== 'undefined') {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch((err) => {
+                    console.log('전체화면 전환 실패:', err);
+                });
+            } else if ((elem as any).webkitRequestFullscreen) { /* Safari */
+                (elem as any).webkitRequestFullscreen();
+            } else if ((elem as any).msRequestFullscreen) { /* IE11 */
+                (elem as any).msRequestFullscreen();
+            }
+
+            // 모바일 주소창 숨기기 트릭 (보조)
             window.scrollTo(0, 1);
             setTimeout(() => window.scrollTo(0, 0), 100);
         }
